@@ -1,0 +1,3 @@
+trust_movement=1
+replay_possessed=0
+frame_walk=1
