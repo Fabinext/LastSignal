@@ -1,5 +1,9 @@
 <p align="center"><img src="assets/logo.webp" alt="Last Signal – SurrounDead multiplayer" width="760"></p>
 
+
+Join us on Discord for all bug reports and to see other Mods:
+https://discord.gg/aDhks82XTv
+
 # Last Signal
 
 **Dedicated multiplayer servers for SurrounDead** – an unofficial fan modification by Fabinext.
