@@ -1,0 +1,40 @@
+# Last Signal dedicated server with plain Docker (no Pterodactyl needed).
+#   1. cp .env.example .env        and fill in a Steam account that owns SurrounDead
+#   2. put LastSignal-Server.tar.gz next to this file
+#   3. docker compose run --rm install      (SurrounDead via SteamCMD + Last Signal into ./data)
+#   4. edit ./data/server.cfg              (server name, password, admins)
+#   5. docker compose up -d server         (logs: docker compose logs -f server)
+# Update: replace LastSignal-Server.tar.gz, run step 3 again, then docker compose up -d --force-recreate server.
+services:
+  install:
+    image: ghcr.io/parkervcp/installers:debian
+    profiles: ["install"]
+    env_file: .env
+    volumes:
+      - ./data:/mnt/server
+      - ./LastSignal-Server.tar.gz:/mnt/LastSignal-Server.tar.gz:ro
+      - ./install.sh:/install.sh:ro
+    entrypoint: ["bash", "/install.sh"]
+
+  server:
+    image: ghcr.io/parkervcp/yolks:wine_latest
+    restart: unless-stopped
+    stop_grace_period: 75s          # start.sh saves players and world on stop (up to 45 s)
+    env_file: .env
+    environment:
+      STARTUP: "if [ -f start.sh ]; then exec bash ./start.sh; else echo 'Last Signal not installed: run the install service first'; sleep 60; fi"
+      WINEARCH: win64
+      WINEPREFIX: /home/container/.wine
+      WINEDEBUG: "-all"
+      WINEDLLOVERRIDES: "mscoree,mshtml="
+      WINETRICKS_RUN: vcrun2022
+      XVFB: "1"
+      DISPLAY: ":0"
+      DISPLAY_WIDTH: "640"
+      DISPLAY_HEIGHT: "480"
+      DISPLAY_DEPTH: "16"
+      AUTO_UPDATE: "0"
+    ports:
+      - "${SERVER_PORT:-7777}:${SERVER_PORT:-7777}/udp"
+    volumes:
+      - ./data:/home/container

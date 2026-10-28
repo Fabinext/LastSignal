@@ -1,0 +1,383 @@
+{
+    "_comment": "DO NOT EDIT: FILE GENERATED AUTOMATICALLY BY PTERODACTYL PANEL - PTERODACTYL.IO",
+    "meta": {
+        "version": "PTDL_v2",
+        "update_url": null
+    },
+    "exported_at": "2026-10-20T08:00:00+02:00",
+    "name": "SurrounDead - Last Signal Dedicated Server",
+    "author": "amberger.fabio@gmail.com",
+    "description": "Dedicated SurrounDead server with the Last Signal mod. Runs the Windows build under Wine without graphics or sound (-nullrhi). Players join from the in-game server list (Last Signal client mod required).",
+    "features": null,
+    "docker_images": {
+        "Wine (latest)": "ghcr.io/parkervcp/yolks:wine_latest",
+        "Wine (staging)": "ghcr.io/parkervcp/yolks:wine_staging"
+    },
+    "file_denylist": [],
+    "startup": "for P in LastSignal-Server.tar.gz NetTest-Server.tar.gz; do if [ -f $P ]; then tar -xzf $P && rm -f $P; fi; done; if [ -f start.sh ]; then exec bash ./start.sh; else echo \"Last Signal not installed: upload LastSignal-Server.tar.gz via SFTP, then start again.\"; fi",
+    "config": {
+        "files": "{}",
+        "startup": "{\r\n    \"done\": \"Last-Signal-Server bereit\"\r\n}",
+        "logs": "{}",
+        "stop": "stop"
+    },
+    "scripts": {
+        "installation": {
+            "script": "#!/bin/bash\n# Installs SurrounDead (Windows build, branch STEAM_BETA, default experimental = 0.8 / UE 5.6) via SteamCMD and unpacks the Last Signal server package.\n# Without a Steam login: upload the game files via SFTP (SurrounDead/ and Engine/ from your own install).\nset -e\napt-get update -qq\napt-get install -y -qq curl ca-certificates lib32gcc-s1 tar >/dev/null\nmkdir -p /mnt/server /mnt/server/saves\ncd /mnt/server\n\nif [ -n \"${STEAM_USER}\" ]; then\n    mkdir -p /mnt/server/steamcmd\n    curl -sSL https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz | tar -xz -C /mnt/server/steamcmd\n    /mnt/server/steamcmd/steamcmd.sh +@sSteamCmdForcePlatformType windows +force_install_dir /mnt/server \\\n        +login \"${STEAM_USER}\" \"${STEAM_PASS}\" ${STEAM_AUTH} +app_update 1645820 ${STEAM_BETA:+-beta ${STEAM_BETA}} validate +quit\n    rm -rf /mnt/server/steamcmd /root/Steam\nelse\n    echo \"No Steam login set: upload the SurrounDead game files via SFTP.\"\nfi\n\nif [ -n \"${LASTSIGNAL_URL}\" ]; then\n    curl -fsSL -o /mnt/server/LastSignal-Server.tar.gz \"${LASTSIGNAL_URL}\"\nfi\nif [ -f /mnt/server/LastSignal-Server.tar.gz ]; then\n    tar -xzf /mnt/server/LastSignal-Server.tar.gz -C /mnt/server && rm -f /mnt/server/LastSignal-Server.tar.gz\nelif [ ! -f /mnt/server/start.sh ]; then\n    echo \"Last Signal not installed yet: upload LastSignal-Server.tar.gz via SFTP, then start the server.\"\nfi\nif [ ! -f /mnt/server/server.cfg ] && [ -f /mnt/server/server.cfg.example ]; then\n    cp /mnt/server/server.cfg.example /mnt/server/server.cfg\nfi\necho \"Installation complete.\"\n",
+            "container": "ghcr.io/parkervcp/installers:debian",
+            "entrypoint": "bash"
+        }
+    },
+    "variables": [
+        {
+            "name": "Server Name",
+            "description": "Name shown in the in-game server list.",
+            "env_variable": "LASTSIGNAL_NAME",
+            "default_value": "Last Signal Server",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string|max:48",
+            "field_type": "text"
+        },
+        {
+            "name": "Server Description",
+            "description": "Short description shown in the in-game server list (max 120 characters).",
+            "env_variable": "LASTSIGNAL_DESCRIPTION",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|string|max:120",
+            "field_type": "text"
+        },
+        {
+            "name": "Message of the Day",
+            "description": "Welcome message shown in chat when a player joins. Empty = none.",
+            "env_variable": "LASTSIGNAL_MOTD",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|string|max:150",
+            "field_type": "text"
+        },
+        {
+            "name": "Server Password",
+            "description": "Players need this password to join. Empty = open server. The server list only shows a lock, the password is never sent to it.",
+            "env_variable": "LASTSIGNAL_PASSWORD",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|string|max:32",
+            "field_type": "text"
+        },
+        {
+            "name": "Public Server",
+            "description": "1 = show the server in the in-game server list, 0 = hidden.",
+            "env_variable": "LASTSIGNAL_PUBLIC",
+            "default_value": "1",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|boolean",
+            "field_type": "text"
+        },
+        {
+            "name": "Max Players",
+            "description": "How many players can be online at the same time (1-64).",
+            "env_variable": "LASTSIGNAL_MAX_PLAYERS",
+            "default_value": "8",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|integer|between:1,64",
+            "field_type": "text"
+        },
+        {
+            "name": "Admins (Player IDs)",
+            "description": "Player IDs of the admins, comma-separated. Every player sees their own ID in game under J > SERVER (console: \"players\"). Admins get the ADMIN tab in the journal. Optional entries steam:<17 digits>: once one is listed, an admin needs a listed ID and a listed Steam ID.",
+            "env_variable": "LASTSIGNAL_ADMINS",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|string|max:500",
+            "field_type": "text"
+        },
+        {
+            "name": "Admin Password",
+            "description": "Optional. If set, admins (IDs above) get their admin rights only after typing \"/admin <password>\" in chat, once per connection (5 tries). Empty = admin by ID alone.",
+            "env_variable": "LASTSIGNAL_ADMIN_PASSWORD",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|string|max:64",
+            "field_type": "text"
+        },
+        {
+            "name": "Server FPS",
+            "description": "Target updates per second while players are online (20-120). The server lowers it by itself when the machine cannot keep up. Without players it idles at 5.",
+            "env_variable": "LASTSIGNAL_FPS",
+            "default_value": "60",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|integer|between:20,120",
+            "field_type": "text"
+        },
+        {
+            "name": "Server FPS Minimum",
+            "description": "Lowest target the automatic FPS throttle may choose under load (20-120, at most Server FPS). Steps: 50, 45, 40, 30, 20.",
+            "env_variable": "LASTSIGNAL_FPS_MIN",
+            "default_value": "45",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|integer|between:20,120",
+            "field_type": "text"
+        },
+        {
+            "name": "FPS Automatic",
+            "description": "1 = the server lowers its FPS by itself when it cannot keep up (not below Server FPS Minimum) and raises it again when it has headroom. 0 = fixed Server FPS. Console: fps auto on/off.",
+            "env_variable": "LASTSIGNAL_FPS_AUTO",
+            "default_value": "1",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|boolean",
+            "field_type": "text"
+        },
+        {
+            "name": "Autosave (minutes)",
+            "description": "How often the world is saved, in minutes. Players are additionally saved every 10 seconds.",
+            "env_variable": "LASTSIGNAL_SAVE_MINUTES",
+            "default_value": "5",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|integer|between:1,60",
+            "field_type": "text"
+        },
+        {
+            "name": "Save Slot",
+            "description": "Name of the save folder in saves/ (e.g. MyWorld). Empty = most recently played save.",
+            "env_variable": "LASTSIGNAL_SAVE_SLOT",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|string|max:64",
+            "field_type": "text"
+        },
+        {
+            "name": "Corpse Cleanup (minutes)",
+            "description": "Dead zombies disappear after this many minutes, including unlooted items. Also applies to items the server sets down at a player's feet (give, consumed items) and, only with srv_drophook_first=1 in coop.txt, to items players drop (detected fresh within 6 m of a player). Never while a player is within 15 m. 0 = never.",
+            "env_variable": "LASTSIGNAL_CORPSE_MINUTES",
+            "default_value": "60",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|integer|between:0,1440",
+            "field_type": "text"
+        },
+        {
+            "name": "Death Box Cleanup (minutes)",
+            "description": "Player death boxes disappear after this many minutes, including their contents (never while a player is nearby). 0 = never.",
+            "env_variable": "LASTSIGNAL_DEATHBOX_MINUTES",
+            "default_value": "60",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|integer|between:0,1440",
+            "field_type": "text"
+        },
+        {
+            "name": "Loot Refill",
+            "description": "1 = searched loot containers refill after the refill time, like in single player (Difficulty.Refill). 0 = never. Overrides the value from the save.",
+            "env_variable": "LASTSIGNAL_LOOT_REFILL",
+            "default_value": "1",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|boolean",
+            "field_type": "text"
+        },
+        {
+            "name": "Loot Refill Time (minutes)",
+            "description": "Minutes until a searched loot container refills (Difficulty.RefillTime, 1-10080).",
+            "env_variable": "LASTSIGNAL_LOOT_REFILL_MIN",
+            "default_value": "30",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|integer|between:1,10080",
+            "field_type": "text"
+        },
+        {
+            "name": "Save Backups (count)",
+            "description": "Number of save backups kept in saves/_backup (made at server start after a clean stop and after a world save, see Backup Interval). 0 = no backups.",
+            "env_variable": "LASTSIGNAL_BACKUPS",
+            "default_value": "5",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|integer|between:0,50",
+            "field_type": "text"
+        },
+        {
+            "name": "Backup Interval (minutes)",
+            "description": "At most one save backup per this many minutes while the server runs (taken right after a completed world save). 0 = only at server start after a clean stop (a server that never stops cleanly then gets no new backups).",
+            "env_variable": "LASTSIGNAL_BACKUP_MINUTES",
+            "default_value": "30",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|integer|between:0,1440",
+            "field_type": "text"
+        },
+        {
+            "name": "Daily Restart (HH:MM)",
+            "description": "Daily restart at this time of the container (often UTC). Players are warned 10, 5 and 1 minute and 30 s before, then the server saves and stops; Wings must start it again (crash detection with 'detect clean exit as crash', both on by default). Never within the first hour after a start. Empty = off.",
+            "env_variable": "LASTSIGNAL_RESTART_AT",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|regex:/^(?!2[4-9])[0-2]?[0-9]:[0-5][0-9]$/",
+            "field_type": "text"
+        },
+        {
+            "name": "Bring Own Inventory",
+            "description": "1 = players bring their own local save (like Valheim). 0 = inventories stay on the server (default).",
+            "env_variable": "LASTSIGNAL_LOCAL_INVENTORY",
+            "default_value": "0",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|boolean",
+            "field_type": "text"
+        },
+        {
+            "name": "Master List URL",
+            "description": "Server list the server announces itself to. Only change this if you run your own master list. Empty = not listed.",
+            "env_variable": "LASTSIGNAL_MASTER_URL",
+            "default_value": "https://update.tacticalhardline.com",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|string|max:200",
+            "field_type": "text"
+        },
+        {
+            "name": "Master List Key",
+            "description": "Only for a private master list that requires a key. The public server list needs none. Empty = no key.",
+            "env_variable": "LASTSIGNAL_MASTER_KEY",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|string|max:200",
+            "field_type": "text"
+        },
+        {
+            "name": "Public Address",
+            "description": "Address players connect to (IP or domain). Empty = IP of the allocation.",
+            "env_variable": "LASTSIGNAL_PUBLIC_ADDRESS",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|string|max:253",
+            "field_type": "text"
+        },
+        {
+            "name": "Steam Username",
+            "description": "Steam account that owns SurrounDead (only used to download the game during installation). You can leave it empty and upload the game files via SFTP instead.",
+            "env_variable": "STEAM_USER",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|string",
+            "field_type": "text"
+        },
+        {
+            "name": "Steam Password",
+            "description": "Only used for the download during installation.",
+            "env_variable": "STEAM_PASS",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|string",
+            "field_type": "text"
+        },
+        {
+            "name": "Steam Guard Code",
+            "description": "Current Steam Guard code if Steam asks for one (enter it right before reinstalling).",
+            "env_variable": "STEAM_AUTH",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|string|max:8",
+            "field_type": "text"
+        },
+        {
+            "name": "Last Signal Package URL",
+            "description": "Optional download link for LastSignal-Server.tar.gz. Empty = upload the file via SFTP and restart the server.",
+            "env_variable": "LASTSIGNAL_URL",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|string",
+            "field_type": "text"
+        },
+        {
+            "name": "Wine Packages",
+            "description": "Runtime libraries for Unreal Engine and UE4SS.",
+            "env_variable": "WINETRICKS_RUN",
+            "default_value": "vcrun2022",
+            "user_viewable": false,
+            "user_editable": false,
+            "rules": "nullable|string",
+            "field_type": "text"
+        },
+        {
+            "name": "Virtual Display",
+            "description": "Wine needs a display even without graphics.",
+            "env_variable": "XVFB",
+            "default_value": "1",
+            "user_viewable": false,
+            "user_editable": false,
+            "rules": "required|string",
+            "field_type": "text"
+        },
+        {
+            "name": "Display Width",
+            "description": "",
+            "env_variable": "DISPLAY_WIDTH",
+            "default_value": "640",
+            "user_viewable": false,
+            "user_editable": false,
+            "rules": "required|integer",
+            "field_type": "text"
+        },
+        {
+            "name": "Display Height",
+            "description": "",
+            "env_variable": "DISPLAY_HEIGHT",
+            "default_value": "480",
+            "user_viewable": false,
+            "user_editable": false,
+            "rules": "required|integer",
+            "field_type": "text"
+        },
+        {
+            "name": "Display Depth",
+            "description": "",
+            "env_variable": "DISPLAY_DEPTH",
+            "default_value": "24",
+            "user_viewable": false,
+            "user_editable": false,
+            "rules": "required|integer",
+            "field_type": "text"
+        },
+        {
+            "name": "Wine Architecture",
+            "description": "",
+            "env_variable": "WINEARCH",
+            "default_value": "win64",
+            "user_viewable": false,
+            "user_editable": false,
+            "rules": "required|string",
+            "field_type": "text"
+        },
+        {
+            "name": "Steam branch",
+            "description": "SteamCMD beta branch of SurrounDead. Last Signal 0.10 needs \"experimental\" (0.8, UE 5.6). Empty = stable branch (not supported).",
+            "env_variable": "STEAM_BETA",
+            "default_value": "experimental",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|string|max:32",
+            "field_type": "text"
+        }
+    ]
+}

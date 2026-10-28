@@ -1,0 +1,63 @@
+# Last Signal server settings. Only needed without Pterodactyl (there the panel values under "Startup" apply).
+# Save as server.cfg next to start.sh. Variables already set in the environment take precedence
+# (start.sh prints each difference); with CONFIG_PRIORITY=file the values in this file win.
+# LASTSIGNAL_SERVER and LASTSIGNAL_PORT are set by start.sh itself. Old NETTEST_* names are only read by the mod
+# (not by start.sh): use the LASTSIGNAL_* names below. All settings are explained in SERVER.md.
+#CONFIG_PRIORITY=file
+LASTSIGNAL_NAME=Last Signal Server
+# Short text for the in-game server list (max 120 characters)
+LASTSIGNAL_DESCRIPTION=
+# Welcome message in chat when a player joins (max 150 characters)
+LASTSIGNAL_MOTD=
+# Join password (empty = open server). The server list only shows a lock, never the password.
+LASTSIGNAL_PASSWORD=
+# 1 = show in the in-game server list, 0 = hidden
+LASTSIGNAL_PUBLIC=1
+# UDP port of the game
+SERVER_PORT=7777
+# 1-64
+LASTSIGNAL_MAX_PLAYERS=8
+# Admin player IDs, comma-separated (every player sees their own ID in game under J > SERVER)
+LASTSIGNAL_ADMINS=
+# Optional: admins need "/admin <password>" in chat once per connection (empty = admin by ID alone)
+LASTSIGNAL_ADMIN_PASSWORD=
+# Target server FPS (20-120); the server lowers it by itself when it can't keep up
+LASTSIGNAL_FPS=60
+# Lowest FPS the automatic throttle may go down to (20 up to LASTSIGNAL_FPS)
+LASTSIGNAL_FPS_MIN=45
+# 1 = lower the FPS automatically under load and raise it again, 0 = fixed LASTSIGNAL_FPS
+LASTSIGNAL_FPS_AUTO=1
+# World autosave in minutes (players are also saved every 10 s)
+LASTSIGNAL_SAVE_MINUTES=5
+# Save folder in saves/ (empty = most recently played)
+LASTSIGNAL_SAVE_SLOT=
+# Save backups kept in saves/_backup (0 = none), made at start after a clean stop and right after a world save;
+# at most one backup per BACKUP_MINUTES while running (0 = only at start after a clean stop)
+LASTSIGNAL_BACKUPS=5
+LASTSIGNAL_BACKUP_MINUTES=30
+# Daily restart at HH:MM in container time (often UTC), empty = off; needs an automatic restart (see SERVER.md)
+LASTSIGNAL_RESTART_AT=
+# docker stop / Ctrl+C: seconds start.sh waits for the final save before it kills the game (5-600; Docker grace must
+# be longer, e.g. docker stop -t 75). The console/panel "stop" always waits up to 90 s.
+LASTSIGNAL_STOP_WAIT=45
+# Remove dead zombies after this many minutes (0 = never; never with a player within 15 m). Also items set down at a
+# player's feet (give/consumed) and, only with srv_drophook_first=1 in coop.txt, items players drop
+LASTSIGNAL_CORPSE_MINUTES=60
+# Remove player death boxes after this many minutes (0 = never)
+LASTSIGNAL_DEATHBOX_MINUTES=60
+# 1 = players bring their own inventory, 0 = inventories stay on the server
+LASTSIGNAL_LOCAL_INVENTORY=0
+# Server list to announce to (empty = not listed)
+LASTSIGNAL_MASTER_URL=https://update.tacticalhardline.com
+# Only for a private master list that requires a key
+#LASTSIGNAL_MASTER_KEY=
+# Address players connect to (IP or domain; empty = detected automatically)
+LASTSIGNAL_PUBLIC_ADDRESS=
+
+# Searched loot containers refill like in single player (1 = on) and after how many minutes (1-10080)
+LASTSIGNAL_LOOT_REFILL=1
+LASTSIGNAL_LOOT_REFILL_MIN=30
+
+# Optional Wine settings (defaults: WINEPREFIX = .wine in the server folder, WINEDEBUG=-all)
+#WINEPREFIX=
+#WINEDEBUG=-all
