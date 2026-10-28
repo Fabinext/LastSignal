@@ -182,6 +182,9 @@ static class Game
         // schreiben, wenn es nicht laeuft (oben geprueft).
         string ini = UserEngineIni();
         SetIniKey(ini, "OnlineSubsystemSteam", "bUseSteamNetworking", ipMode ? "false" : null);
+        // UE 5.6 schreibt die Engine.ini oben beim Beenden neu und laesst den Eintrag dabei weg. Die Datei
+        // <Spiel>\SurrounDead\Config\UserEngine.ini liest Unreal, schreibt sie aber nie: dort haelt er dauerhaft.
+        SetIniKey(GameUserEngineIni(win64), "OnlineSubsystemSteam", "bUseSteamNetworking", ipMode ? "false" : null);
         log("Game network settings updated");
     }
 
@@ -272,6 +275,12 @@ static class Game
         File.WriteAllLines(path, lines);
     }
 
+    // <Spiel>\SurrounDead\Config\UserEngine.ini (Konfig-Ebene GameDirUser, wird vom Spiel nie geschrieben)
+    public static string GameUserEngineIni(string win64)
+    {
+        return Path.GetFullPath(Path.Combine(win64, @"..\..\Config\UserEngine.ini"));
+    }
+
     public static void Uninstall(string win64, Action<string> log)
     {
         if (IsRunning()) throw new InvalidOperationException("SurrounDead is still running. Please close the game first.");
@@ -279,6 +288,8 @@ static class Game
         string dir = Path.Combine(win64, "ue4ss");
         if (File.Exists(dll)) { File.Delete(dll); log("Removed dwmapi.dll"); }
         if (Directory.Exists(dir)) { Directory.Delete(dir, true); log("Removed UE4SS and Last Signal"); }
+        string userIni = GameUserEngineIni(win64);
+        if (File.Exists(userIni)) { SetIniKey(userIni, "OnlineSubsystemSteam", "bUseSteamNetworking", null); log("Network setting removed"); }
     }
 }
 

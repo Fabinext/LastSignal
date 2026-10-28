@@ -1,3 +1,633 @@
 trust_movement=1
 replay_possessed=0
 frame_walk=1
+# Zeilen mit # sind Kommentare. Weitere Schalter mit Standardwert (nur eintragen, um ihn zu aendern):
+#   test=0           Testbefehle aus test_cmd.txt ausfuehren (lokaler Test; dev=1 erlaubt sie auch)
+#   save_before_join=1 Mitspieler speichert seinen Spielstand, bevor er beitritt
+#   save_back=1      Mitspieler schreibt sein Inventar vom Host in seinen eigenen Spielstand (beides im lokalen Zwei-Instanzen-Test aus: beide teilen einen Spielstand)
+#   local_inventory=0 Nur Host: 1 = Mitspieler bringen ihr lokales Inventar mit und bekommen es zurueckgeschrieben (wie Valheim), 0 = Inventar bleibt auf dem Server
+#   car_hz=30        Fahrzeug-Posen pro Sekunde (15-60, 0 = alter Weg mit 15)
+#   corpse_v2=1      Leichen ohne Ragdoll-Sync (nur nahe Leichen relevant)
+#   attach_v2=1      Waffenaufsaetze sofort einbauen
+#   hp_v2=1          Zombie-Leben mit festen IDs, nur bei Aenderung senden
+#   join_v2=1        Beitritt direkt am Ziel hinter dem Ladebildschirm
+#   spawner_stop=2   Spawner beim Mitspieler stoppen: 0 aus, 1 Invoker-Variante, 2 Spawner-Variante
+#   cloth_fast=1     Kleidung entprellt nachschicken (nur die geaenderte Figur, Ruhe nach dem Inventar-Abgleich)
+#   attach_partial=0 Waffenaufsaetze auch bei "teilweise eingebaut" einmal nachholen (z. B. fehlender Schalldaempfer)
+#   consume_fix=0    Leere Flasche u. ae. nach dem Verbrauch legt der Server vor die Fuesse (Mitspieler und Server; ersetzt durch inv_reconcile)
+#   drop_mode=0      Nur Server: Cheat-Gegenstaende ablegen, 0 selbst spawnen, 1 ins Inventar + Fallenlassen des Spiels, 2 RequestDropAsPickup (nur mit srv_gamedrop_out=1, sonst wie 0) (Testbefehl: dropmode <0|1|2>)
+#   attach_flags=1   Schalldaempfer-/Visier-Flags der Waffe nach dem Einbau und beim Ziehen pruefen und richtigstellen (Mitspieler)
+#   inv_reconcile=0  Blinkende Gegenstaende > 3 s: leere Flasche u. ae. beim Server anlegen lassen, sonst Inventar neu abgleichen (Mitspieler; aus: der Neuabgleich laedt Charakter/Waffe neu)
+#
+# Runde 5 (Module ls_*.lua). Ohne Eintrag gilt der Wert hinter dem Namen.
+#   profile=legacy   (nicht gesetzt) Alle neuen Wege der Module aus (jeder Modul-Schalter gilt als 0), nur der alte Koop-Weg
+#
+# Netz (ls_net)
+#   net_v3=1         Protokoll v3 komplett (Handshake h4, Faehigkeiten, Warteschlangen); geht nach > 3 internen Fehlern in 60 s aus
+#   net_kbps=12      Bandbreite je Gegenstelle in KB/s
+#   net_burst=24     Burst je Gegenstelle in KB
+#   net_fps=30       Rahmen pro Sekunde je Gegenstelle
+#
+# LastSignalCore.dll (ls_native)
+#   native_observer=1 N4b-Beobachter: Blueprint-Aufrufe beobachten (ohne Watch-Zeilen bleibt GNatives unberuehrt)
+#   native_n8=1      Narrative-Beobachtung (Quest-Aufgaben) auf dem Host
+#   ai_nearest       N6 "naechster Gast" (nur als Kommentar fuehren: eine aktive Zeile gilt auf jeder Seite): ohne Eintrag 1 auf dem dedizierten Server
+#                    (Spieler-0-Aufrufe aus der N6-Liste ai_n6_list an den naechsten Mitspieler, erst wenn netcore_n6.txt liegt), sonst diag (nur loggen);
+#                    Rueckweg: ai_nearest=diag oder ai_nearest=0 eintragen
+#
+# Inventar (ls_inv)
+#   inv_v2a=1        Inventar v2a (ls_inv): Abgleich nur beim Beitritt, Respawn per SERVER_RequestData, Hotbar/Waffe/Speichern
+#   inv_bar=1        Hotbar-Slots 6-8 beim Host speichern (NetTest_Guests\<ID>.bar.txt) und nach dem Beitritt zuruecksetzen
+#   inv_aw=1         Aktive Waffe speichern und nach dem Beitritt wieder in die Hand geben
+#   inv_aw_srv=0     Alter Rueckfall: aktive Waffe per ServerFuncChangeActiveSlot setzen (Gast galt danach als unbewaffnet, erster Tastendruck holsterte)
+#   inv_store=1      Gast-Inventar bei jeder Aenderung speichern (hoechstens alle 2 s), beim Trennen und beim Welt-Save
+#   inv_v2b=1        Inventar v2b (ls_inv): Platzhalter aufloesen, lokal erzeugte/verbrauchte Items mit dem Server abgleichen
+#   inv_pend=1       Blinkende Platzhalter (leere Flasche, Brunnen, Ernte, Rip ...) beim Host anlegen lassen (pend2)
+#   inv_adopt=1      Lokal erzeugte Items ohne Platzhalter (Wasser reinigen, Lootbox) beim Host anlegen lassen
+#   inv_use=1        Lokal verbrauchte Items (Brunnen, Generator, Gaskanister, Dietrich) auch beim Host entnehmen
+#   inv_sum=0        Server-Digest-Vergleich (Standard aus: Gast-Sicht leer -> Dauer-Neuabgleich, vertauschte Ausruestung)
+#   inv_give=1       Admin-give legt direkt ins Inventar (statt vor die Fuesse)
+#   inv_crep=1       Feste Kisten (aus der Karte) um Gaeste replizieren: Live-Update bei gleichzeitigem Looten
+#   inv_lflag=1      "Durchsucht"/"Lager" einer Kiste fuer alle gleich
+#   inv_lock=1       Hinweis, wenn ein anderer Spieler dieselbe Kiste offen hat
+#   inv_trader=1     Haendler-Geld vom Host an alle
+#   inv_carcass=0    Alter Rueckfall: Loot von nur lokal existierenden Leichen ueber den Host (ersetzt durch inv_lootprime)
+#   inv_ground=1     Aufgehobener Boden-Gegenstand ohne Server-Bestaetigung: Server-Pickup gleichen Typs <= 4 m zaehlt
+#   inv_free_per_min=30  Ernte/Angeln ohne Verbrauch: hoechstens so viele Items je Minute und Gast
+#   inv_ledger_ms=500    Host liest die Gast-Inventare alle so viele ms (Gutschriften, Digest, Speichern)
+#
+# Lebenswerte (ls_vit)
+#   vit_v2=1         Lebenswerte v2: Host spiegelt Leben/Hunger/Durst/Strahlung/Sauerstoff/Blutung an den Mitspieler (vit2), ersetzt vitset/vitguard; 0 = alter Weg
+#   vit_rm=1         Blutung/Bruch, die beim Mitspieler enden (Stop-Timer, Bandage), auch beim Host beenden (sonst blutet er dort weiter)
+#   vit_timers=1     Blutungs-Schadens-Timer beim Mitspieler stoppen (sonst doppelter Blutungsschaden ueber Svr_Damage)
+#   vit_regen=1      Regeneration mit dem Skill des Mitspielers (lokal, an den Host gemeldet), Host-Regeneration mit Geist-Skill aus
+#   vit_regen_max=3  Hoechster Lebenszuwachs pro Sekunde aus der Regeneration des Mitspielers (Pruefung beim Host)
+#   vit_fx=1         Brennende Spieler beim Mitspieler sichtbar (Feuer ist im Spiel nicht repliziert)
+#   vit_move=1       Laufgeschwindigkeit/Hocken/Schwimmen/Sprunghoehe des Mitspielers auf die Host-Kopie uebernehmen (gegen Rubberbanding)
+#   vit_infect=1     Infektion (UE 5.6): Restzeit vom Host beim Gast uebernehmen, Eindaemmen (Subdue) des Gasts auch beim Host
+#
+# Spieler (ls_player)
+#   respawn_v2=1     Respawn mit Ladebildschirm, ohne Vollsync, Rueckfall bei verlorenem Respawn-RPC (braucht inv_v2a=1)
+#   death_guard=1    Todesbildschirm bleibt offen, ScreenPermadeath loescht nie den eigenen Spielstand, SaveMenu dort = freiwillig verlassen
+#   save_lock=1      Mitspieler: Speichern gesperrt (AllowSaving? 0,5 s, Speichern im Todes-SaveMenu ausgeblendet)
+#   guest_backup=1   Mitspieler: eigener Spielstand einmal pro Verbindung nach SaveGames\LS_Backup (DLL-Dienst backup)
+#   bed_v2=1         Bett/Schlafsack-Spawnpunkt je Mitspieler (gespeichert, Respawn-Knopf beim Mitspieler aktiv)
+#   session_v2=1     Gleiche Spieler-ID: neue Verbindung ersetzt eine tote, doppelte lebende wird abgelehnt
+#   shutdown_v2=1    Server-Ende: alle Mitspieler sofort speichern, Hinweis und sauber trennen
+#   player_cmds=1    Chat-Befehle /suicide (/kill) und /unstuck (/stuck)
+#   player_newquest=1 Neuer Mitspieler (kein Server-Spielstand): Startquest nur fuer ihn
+#                    (nur Hinweis pl_new; die Startquest selbst startet ls_world quest_start -> quest_v1=1 und quest_start=1 mit einschalten)
+#
+# KI und Tiere (ls_ai)
+#   ai_v2=1          KI v2 (ls_ai): Zombies/Bosse/Menschen/Geschuetze/Nester ueber ai2 (HP, Max, Tod), ein Binder, Waechter ohne Hooks
+#   ai_carcfix_path=1 Host: Kadaver-Korrektur (animal_lootrep) holt nur die gemerkten Kadaver per Pfad statt jede Sekunde FindAllOf ueber alle Tiere (~18 ms = Ruckler alle 1 s bei Gaesten). 0 = alter Weg
+#   equip_col_attach=1 Alle: Kollision auch fuer Waffen-Aufsaetze (Daempfer, Visier, Magazin) und die Waffe in der Hand aus, solange ausgeruestet. Sonst trifft der Zielstrahl (WeaponWallTrace) den Aufsatz: Weapon Muzzle Blocked, kein Zielen. 0 = nur RepActorsData
+#   combat_muzzle_fix=1 Gast: steht beim Zielen Weapon Muzzle Blocked an, baut der Mod den Zielstrahl des Spiels nach (1x/s), loggt den Treffer ([Kampf] Muendung blockiert: ...) und schaltet die Kollision aus, wenn das getroffene Teil zur eigenen Figur gehoert (Waffe, Aufsatz, Kleidung). Echte Waende bleiben. 0 = aus
+#   combat_pose_fix=1 Gast: haelt die Figur eine Waffe, aber die Animation steht auf unbewaffnet (Arm haengt, Waffe hebt sich beim Zielen nicht; Waffe nach Join schon in der Hand), schickt der Mod den Equip-Wert des Spiels nach (Svr_UpdateCombatState), notfalls lokal. 0 = aus
+#   car_hb_release=1 Gast: beim Losfahren die Handbremse der eigenen Auto-Kopie loesen (das Spiel zieht sie beim Aussteigen und loest sie nur im Einstiegs-Ablauf, der beim Gast nicht laeuft: zweite Fahrt bewegte sich nicht). 0 = aus
+#   car_zrel=1 Server: Zombies bis 80 m um ein von einem Gast gefahrenes Auto immer an Gaeste senden (im Auto schickt der Gast keine Kamera-Position, der Server rechnete die Sichtweite vom Einstieg aus: Zombies am Auto unsichtbar). Zurueck ab 120 m/Tod/Fahrtende. 0 = aus
+#   car_diag=0 Diagnose: waehrend einer Fahrt alle 5 s Zombies um das Auto zaehlen (Server und Gast, [Car] Diag Fahrt). 0 = aus
+#   ui_mark_gps=1 Gast: Karten-Marker per Doppelklick auch ohne Spiel-GPS-Erkennung (IsGPSEquipped? ist beim Gast immer false); nur wenn der Server GPS meldet. Anzeige, Speichern und Teilen mit dem Clan wie ui_marks. 0 = aus
+#   inv_gain_host=1 Server: Rueckgabe-Item beim Verbrauch (leere Flasche) legt der Host selbst an, wenn binnen 2,5 s kein Platzhalter des Gasts kam (ab der zweiten Flasche stapelt das Spiel beim Gast ohne Platzhalter: Flasche verschwand). Nicht bei Abwurf, Umlagern oder Stapel-Teilen. 0 = aus
+#   build_dis_raw=1 Server: Zerlege-Werkbank liest ihre Items direkt aus den Containern (GetContainerItems liefert in Lua nichts: Werkbank galt immer als leer, Zerlegen ging nie). 0 = aus
+#   animal_v3=1      Tiere v3: Tier-HP/Tod/gelootet/Liegepunkt ueber ai2, Kadaver-Inventar repliziert
+#   ai_guard=1       Mitspieler: KI-Kopien per Eigenschaft schuetzen (CanDamage?, DamageToDo, bCanBeDamaged), statt Lua-Hooks
+#   ai_aio_guest=1   Mitspieler: AI-Optimizer friert/entfernt replizierte KI-Kopien nicht
+#   ai_montage=1     KI-Animationen (Zombie, Boss, Tier) ohne Hook vom Server (alter Montage-Hook aus)
+#   ai_ghosts=1      Mitspieler: lokale Geister-Geschuetze/-Spawner/-Nester jede Sekunde entfernen
+#   ai_horde=1       Server: Horde endet bei Tod eines Mitspielers in ihrer Naehe
+#   ai_bloodmoon=1   Blutmond nur vom Server (Mitspieler wuerfelt nicht selbst)
+#   ai_invoker=1     Server: Mitspieler-Figuren als KI-Invoker und Sicht-Quelle (Tiere fliehen/greifen an)
+#   ai_wake=1        Server: Fernkampf-KI mit Ziel Mitspieler auch ausserhalb 60 m animieren (Schuesse)
+#   animal_ragdoll=1 Mitspieler: Tier-Leiche fliegt nicht weg, liegt am Ort des Servers
+#   animal_lootrep=1 Server: Inventar toter Tiere replizieren (Loot fuer Mitspieler)
+#   animal_ground=1  Mitspieler: Tier-Leiche, die im Boden steckt, auf den Boden setzen (sonst kleine Tiere unsichtbar, "kein Kadaver da")
+#   animal_meat=1    Server: Huntsman-Fleisch fuer Gast-Schuetzen mit dem Skill ins Kadaver-Inventar (UE 5.6; das Spiel prueft nur den Server-Geist)
+#
+# Kampf (ls_combat)
+#   combat_v2=1        Kampf v2 (ls_combat): Hauptschalter aller combat_*-Schalter unten (beide Seiten)
+#   combat_credit=1    Kills/XP, die beim Server-Geist landen, dem Mitspieler gutschreiben; Kill-Zaehler an ihn (cb_kills)
+#   combat_xppopup=1   "Zombie Killed, XP Given" beim Mitspieler anzeigen
+#   combat_skills=1    Gast-Waffen auf dem Server rechnen mit den Faehigkeiten des Gasts (Multiplikator, Marksmanship-XP)
+#   combat_falloff=1   Schadensabfall nach Entfernung fuer Gast-Schuesse (ShotDistance auf dem Server)
+#   combat_impacts=1   Einschlaege/Blut fremder Schuesse anzeigen
+#   combat_hitmarker=1 Hitmarker beim Mitspieler (das Spiel zeigt ihn nur auf dem Server)
+#   combat_proj=1      Granaten, Molotovs, Rohrbomben, Krachmacher, Granatwerfer, Raketen, Leuchtpistole, Glasflaschen fuer alle (Server-Kopie; Glasflaschen locken die KI nur ueber sie)
+#   combat_proj_hook=1 Eigene Wurfkoerper/Geschosse per Lua-Hook (ReceiveBeginPlay bzw. UserConstructionScript) erkennen
+#   combat_boom=1      Explosionen von Faessern/Minen bei allen; Gast-Explosionen loest der Server aus
+#   combat_mine_sync=1  Minen-Abgleich: Gast entfernt Minen, die der Server nicht hat (BP_Landmine_C zerstoert sich zufaellig je Maschine)
+#   combat_durability=1 Server nutzt Gast-Waffen pro Schuss ab
+#   combat_melee_guard=1 Nahkampf trifft nur auf dem Server (keine doppelten Zahlen/XP)
+#   combat_attach_remote=1 Aufsaetze fremder Waffen nachbauen (fehlende Visiere/Schalldaempfer)
+#   friendly_fire      veraltet seit Runde 7, wird ignoriert: pvp=0 (niemand trifft Spieler), pvp=1 clan_ff=0 (Clan geschuetzt), pvp=1 clan_ff=1 (alle treffbar)
+#
+# Bauen (ls_build)
+#   build_v2=1       Bauen v2 (Modul ls_build): Platzieren/Abbauen/Zustaende ueber den Host. 0 = alles aus (Legacy: Gast kann nicht bauen)
+#   build_place=1    Baumodus des Gasts auf die Host-Kopie spiegeln (b_mode), Host verbraucht das Item (b_ok)
+#   build_hook=1     Host: Pre-Hook auf BuildingComponent_C:Svr_SpawnBuild (aus: Gast meldet den Klick selbst, b_click)
+#   build_ihook=1    Host: Pre-Hook auf BP_JigMultiplayer_C:SERVER_ForwardInteract (Keypad/Umbenennen/Kiste mit Inhalt)
+#   build_state=1    Tueren/Tore/Licht/Turrets/Keypad/Schloesser/Kistenname/Beacon fuer alle gleich, auch Spaetjoiner (b_st)
+#   build_hp=1       Gebaeude-Leben beim Gast (b_hp)
+#   build_owner=1    Owner = anschauender Gast wie in SP (Tanken, Abbau, Hinweise); mit build_ownall=1 fuer ALLE Bauteile, sonst nur Generator/Dusche/Brunnen. Kein Owner fuer Fremde an gesperrten bzw. (claim_ownpick) reinen fremden Bauteilen
+#   build_ownhook=1  Host: genau ein SetOwner im Pre-Hook SERVER_ForwardInteract (mit build_ownall alle Bauteile, sonst Generator/Dusche/Brunnen; wirkt nur mit build_owner=1 und build_ihook=1);
+#                    bei Absturzverdacht build_ownhook=0, dann gilt nur b_foc
+#   build_lock=1     Schlossknacken des Gasts beim Host nachziehen (b_unlock)
+#   build_keypad=1   Keypad-Tastenfeld beim Gast oeffnen, Code beim Host pruefen (b_code)
+#   build_rename=1   Kisten umbenennen beim Gast, Name beim Host speichern (b_name)
+#   build_crate=1    Kiste mit Inhalt aufheben: Ja/Nein beim Gast, Ausfuehren beim Host (b_pick)
+#   build_bed=1      Nur noch der Hinweis "Spawn point set" beim Gast an Bett/Schlafsack; Speichern/Wiederherstellen macht ls_player (bed_v2). ls_build_beds.txt wird nicht mehr gelesen/geschrieben (kann geloescht werden)
+#   build_turret     (kein eigener Schalter, gehoert zu build_state) Selbstschussanlagen: Munition/Leben/Zerstoert vom Host (b_st t); der Tick beim Gast bleibt an (dreht den Turm zum replizierten Ziel)
+#   build_ghost=1    Gast: lokal gespawnte Bauten (SP-Spielstand) nach dem Beitritt entfernen
+#   build_repl=1     Host: Bauten ohne Replikation auf SetReplicates(true) schalten (Selbstkalibrierung)
+#
+# Fahrzeuge (ls_car)
+#   car_v2=1         Fahrzeuge v2 (ls_car, Cap car2): Hauptschalter; 0 = nur der alte Weg (Coop.Car)
+#   car_input=1      Fahrzeug-Eingaben: Zuschauer/Beifahrer/Server nutzen ReplicatedState (Lenkung, Drehzahl, Beifahrer faehrt nicht mit)
+#   car_pass=1       Beifahrer: Freigabe bei Tod/Trennung, Beifahrer wird Fahrer, wenn der Fahrer aussteigt; ein Beifahrer zaehlt nur, wenn ls_car ihn befoerdern kann (lebend, car2), sonst stellt der letzte Beifahrer Kapsel/Handbremse wieder her
+#   car_fx=1         Tank/Zustand/Licht/Motor/Farbe/Rauch/Feuer aller Autos fuer alle (Keyed-State car_s, auch spaete Joiner)
+#   car_seat=1       Sitzende Mitspieler sitzen auch bei den anderen (InVehicle?)
+#   car_dmg=1        Schaden am Auto beim Server (Schuesse, Explosionen, Roadkill) gilt auch fuer den Fahrer
+#   car_svc=1        Kanister/Reparaturset ueber den Server ohne Inventar-Hook (0: alter Hook)
+#   car_trunk=1      Kofferraum: Inventar-Komponente des Autos repliziert
+#   car_noise=1      Fahrgeraeusch fuer die KI meldet der Server (alle 2 s wie im Spiel)
+#   car_hit=1        Ueberfahren: Treffer meldet der Fahrer, der Server macht den Schaden (ls_ai oder car_hit)
+#   car_buy=1        Fahrzeughaendler: Kauf ueber den Server (Geld, Auto fuer alle)
+#   car_buy_guestprice=0  Fahrzeugkauf: 1 = Gastpreis annehmen, wenn die Preistabelle des Haendlers beim Host nicht lesbar ist (unsicher)
+#   car_radio=1      Autoradio fuer alle Insassen/Zuschauer (gleicher Titel, falls die Datei vorhanden ist)
+#   car_horn=1       Hupe fuer alle hoerbar, KI hoert sie beim Server
+#   car_push=1       Schieben ueber den Host (Gast meldet Interact_PushVehicle, Host schiebt seine Kopie)
+#   car_tow=1        Abschleppen ueber den Host (Gast meldet AddTowingComp, Host kuppelt auf seiner Kopie)
+#   car_hook_post=1  Schieben/Abschleppen (Gast): Hook laeuft bei BP-Funktionen erst nach dem Rumpf (UE4SS 3.0.1) - Zustand danach auswerten (Schieben: eigene 2-s-Abklingzeit je Auto, Abschleppen: TowingVehicle? = neuer Stand); 0 = alte Vor-Hook-Annahme
+#   car_towsync=1    Abschleppen: Host-Stand TowingVehicle? an Gaeste (Keyed-State car_tw, nicht repliziert), Gast gleicht lokale Kopie an (Kupplung/Beschriftung) -> nach Neustart/fremdem Ankuppeln reicht ein Druck
+#   car_towquiet=1   Abschleppen (Gast, mit car_towsync): Angleich ohne Hinweise/HUD fuer Unbeteiligte - Abkuppeln still (Kupplung loesen, kein "Towed vehicle detached"), Ankuppeln nur <= 900 uu und nur mit stillem Vorab-Treffer (kein "No vehicle to tow found"); 0 = alter Weg RemoveTowingComp
+#   car_svc_val=1    Tanken/Reparieren: Gast schickt Host-Schluessel und neuen Wert zur Pruefung mit (Host rechnet wie SP)
+#   car_buyclk=1     Fahrzeugkauf: Gast-Klick per ret_early-Patch stumm (kein falsches "Not enough money"), Host kauft
+#   car_buydt=1      Fahrzeugkauf: Preis aus DT_VehicleInfo 'Trader' (sonst Haendler-Widget)
+#   car_buymx=1      Fahrzeugkauf: ein Kauf je Spawner in 4 s, Abholplatz (400 uu) muss frei sein
+#   car_buyui=1      Fahrzeugkauf: neue Geldstapel in der Antwort -> Gast-Anzeige ohne Neuabgleich
+#   car_buyref=1     Fahrzeugkauf: erst spawnen, dann abbuchen; scheitert es, Geld zurueck
+#   car_buyown=1     Fahrzeugkauf: Auto gehoert dem Kaeufer (Owner fuer Server-RPCs, auch nach Neuverbindung)
+#
+# Welt und Quests (ls_world)
+#   world_v2=1       Welt-Modul ls_world (Hauptschalter, Faehigkeit wld2) fuer alle world_*-Schalter unten
+#   world_sky=1      Himmel/Wetter/Uhr/Datum/Mond: Host repliziert UDS/UDW, Gast uebernimmt (ersetzt den alten sky-Weg)
+#   world_layout=1   Siedlungen, POI-Varianten, Zufalls-Prefabs, Airdrop-Kisten, Zufalls-Infestationen nur vom Host
+#   world_events=1   Gast: eigene Airdrop-/Zufallsereignis-Timer aus
+#   world_localfx=1  Gast: Jets/Explosionen der Ereignisse trotz world_events lokal zeigen (0 = auch diese aus)
+#   world_bmoon=1    Blutmond vom Host
+#   world_sleep=1    Zeitsprung beim Schlafen erst, wenn alle Mitspieler schlafen
+#   world_well=1     Brunnen-Wasserstand vom Host
+#   world_harvest=1  Gefaellte Baeume/Steine (Foliage) bei allen entfernen
+#   world_safezone=1 Safe-Zone nur fuer die eigene Figur
+#   world_poi=1      Erkundete Orte je Mitspieler speichern
+#   world_infest=1   Zerstoerte Infestationen vom Host
+#   world_barber=1   Aussehen nach dem Barbier neu senden
+#   world_tech=1     Tech-Baum je Mitspieler speichern (Faehigkeit wtech)
+#   quest_v1=1       Quests fuer Mitspieler (Faehigkeit qst1), Hauptschalter fuer alle quest_*-Schalter unten
+#   quest_area=1     Startquest-Bereiche fuer jeden Mitspieler
+#   quest_dialog=1   NPC-Dialog beim richtigen Mitspieler (nur dedizierter Server)
+#   quest_ghost=1    Quests, die beim Server-Geist landen (Laptop, Folgequests), an Mitspieler weitergeben
+#   quest_share=1    Quest-Fortschritt gemeinsam (Kills, Interaktionen; mit DLL-N8 genauer zugeordnet)
+#   quest_save=1     Quests je Mitspieler speichern/laden (SaveGames\NetTest_Guests\<id>_q.sav)
+#   quest_start=1    Start-Quest fuer neue Mitspieler (20 s nach Bereitschaft, nur ohne _q.sav und ohne Quests);
+#                    einziger Weg zur Startquest fuer neue Gaeste -> an lassen, solange player_newquest=1 ist
+#   quest_rewardpatch=1 Belohnungs-Items nur vom Server (Gast-Patch, braucht LastSignalCore)
+#
+# Oberflaeche (ls_ui)
+#   ui_v2=1          Runde 5 UI (ls_ui): Hauptschalter fuer alle ui_*-Schalter
+#   ui_note=1        Hinweise (Toasts) beim richtigen Spieler: Server-Proxy-HUD je Gast -> note2 (aus: Hinweise der Spiel-Logik fuer Gaeste gehen verloren)
+#   ui_note_ghost=1  Nur dedizierter Server: Hinweise ohne Besitzer (Blutmond, Airdrop ...) an alle Gaeste statt an den Geist
+#   ui_lvl=1         Level-/Skill-Up-Hinweis beim Gast selbst erkennen, falls der Server kein note2 anbietet
+#   ui_pause=1       Pausenmenue beim Gast: Schwierigkeit/Speichern/Schnellspeichern ausblenden
+#   ui_savelock=1    Speichern beim Gast sperren (Bytecode-Patch SaveGameToSlot, braucht LastSignalCore)
+#   ui_respawn=1     Respawn-Bildschirm: Spielstand-Laden ausblenden, Respawnpunkt vom Server
+#   ui_cvars=1       Schwierigkeits-/Loot-CVars des Servers beim Gast, Original beim Verlassen zurueck; Permadeath beim Gast immer aus
+#   ui_map=1         Karte/GPS beim Gast mit 10 Hz statt 1 Hz
+#   ui_marks=1       Eigene Karten-Marker beim Gast sichtbar und gespeichert (ui_marks.txt)
+#   ui_mates=1       Mitspieler als Marker auf Karte und Kompass
+#   ui_ammo=1        Munitionsanzeige mit 10 Hz (ersetzt 1-Hz-Aufruf und Tick-Hook)
+#   ui_music=1       Kampfmusik beim Gast (Kampfstatus vom Server)
+#   ui_music_patch=1 Lokalen Kampf-Check beim Gast abschalten (Bytecode-Patch CheckCombat), sonst nur 10-Hz-Halten
+#   ui_hit=1         Hitmarker vom Server: ls_combat meldet echte Treffer (SERVER_DamageEvent, combat_hit_server) ueber ls_ui an den Schuetzen (nur Marker, Kopf rot); der Gast nutzt sie nur mit Faehigkeit cb_hit2
+#   ui_day=1         Banner "Tage ueberlebt" beim Gast
+#
+# Runde 7: Clans, Bau-Anspruch, Schloesser, PvP/Raids (ls_clan, ls_build, ls_combat, LastSignalCore.dll; nur Host)
+#   clan_on=1        Clans: /clan erstellen/einladen/beitreten/verlassen, Clan-Chat /c <Text>, Clan-Karte (clans.txt)
+#   clan_max=8       Hoechstens so viele Mitglieder je Clan
+#   claim_on=1       Bau-Anspruch: Basis-Marker als Anker (/claim, /unclaim); im Umkreis bauen/nutzen nur Besitzer und Clan
+#   claim_radius_m=40 Radius eines Anspruchs in Metern
+#   locks_on=1       Code-Schloesser fuer Spieler-Tueren/-Kisten (/lock <Code>, /unlock, /code <Code>, /owner; owners.txt)
+#   pvp=1            Spieler koennen Spieler verletzen (Clan-Mitglieder nie); 0 = kein Spielerschaden wie bisher
+#   clan_ff=0        Eigenbeschuss im Clan erlauben (1 = Clan-Mitglieder koennen sich verletzen)
+#   raid_on=1        Raids: Spieler-Gebaeude fremder Spieler/Clans nehmen Schaden
+#   raid_mult_explosive=1.0 Raid-Schadensfaktor fuer Explosionen (gilt auch fuer Explosionen ueber raid_boom: Schaden x Faktor)
+#   raid_mult_melee=0.1 Raid-Schadensfaktor fuer Nahkampf
+#   raid_mult_firearm=0 Raid-Schadensfaktor fuer Schusswaffen (0 = Kugeln beschaedigen keine Gebaeude)
+#
+# Runde 7: Haendler (ls_inv; trd_v1 ist Hauptschalter fuer alle trd_*-Schalter unten, Faehigkeit trd1)
+#   trd_v1=1         Haendler-Sitzungen ueber den Server (Hauptschalter)
+#   trd_addr=1       Haendler fuer Gaeste adressierbar; Host repliziert seine Laufzeit-Haendler (trd_cfg rt=1)
+#   trd_ghost=1      Gast: lokale Geister-Haendler entfernen, wenn der Host seine Haendler repliziert
+#   trd_sess=1       Haendler-Fenster/Sitzung beim Server oeffnen und verwalten (trd_open)
+#   trd_lock=1       Haendler nur fuer einen Kunden gleichzeitig (sonst "belegt")
+#   trd_busy=1       Gast: Hinweis, wenn ein anderer Spieler gleichzeitig mit dem Haendler handelt
+#   trd_prime=1      Leeres Haendler-Fenster: Daten beim Server im Namen des Gasts anfordern
+#   trd_note=1       Haendler-Hinweise beim Server beobachten (DLL) und an den richtigen Gast leiten
+#   trd_dlg=1        Nur dedizierter Server: lokalen Haendler-Dialog des Servers unterdruecken (DLL)
+#   trd_reset=1      Haendler-Restock beim Server an alle Kunden melden
+#   trd_rsui=1       Gast: Haendler-Fenster nach Restock neu oeffnen
+#
+# Quests Runde 7 (ls_world; quest_v2 ist Hauptschalter, braucht quest_v1, Faehigkeit qst2)
+#   quest_v2=1       Quests v2 (Hauptschalter fuer die quest_*-Schalter dieses Blocks)
+#   quest_talk=1     Gast: Gespraech mit Quest-NPC/Haendler beim Server ausloesen (q_talk)
+#   quest_task=1     Quest-Aufgaben ueber DLL-N8 dem richtigen Spieler zuordnen
+#   quest_ui=1       Gast: eigenes Dialog-/Quest-HUD (auch nach dem Tod neu)
+#   quest_gtask=1    Gast: eigene N8-Beobachtung von CompleteNarrativeDataTask
+#   quest_assist=1   Mithilfe: Mitspieler <= 50 m mit gleicher Kill-Aufgabe bekommen den Fortschritt mit
+#   quest_dedupe=1   Quest-Actors je Tag nur einmal; Entfernen erst, wenn kein Spieler den Tag braucht
+#   quest_forget=1   Journal "Vergessen" beim Server (q_forget)
+#   quest_laptop=1   Laptop-Zufallsquest beim Server aus, Auswahl je Spieler
+#   quest_marker=1   Nur dedizierter Server: Host-Questmarker weg, sobald jeder Gast eigene hat
+#   quest_refire=1   Belohnungen mit RefireOnLoad beim Laden eines Gast-Spielstands nicht doppelt geben
+#   quest_spawnfix=1 Gast: HumanQuest-Spawner lokal aus, lokale Zwillinge entfernen
+#   quest_xppatch=1  Gast: Quest-XP-Belohnung lokal aus, der Server gibt sie (Patch, braucht LastSignalCore)
+#
+# Runde 8: Welt-Interaktionen (ls_wobj u. a.)
+#   Gast schickt nur die Absicht, der Server prueft (Abstand <= 8 m, Drossel) und fuehrt mit dem Gast als Besitzer aus.
+#   Faehigkeiten: wobj1 (+ Gruppen wobj1p/wobj1l/wobj1m/wobj1s), aitd, invx, wcrate. Details: _NetTest\analysis\API.md Abschnitt 10
+#   wobj_v1=1        Hauptschalter Weltobjekte (ls_wobj, Faehigkeit wobj1) fuer alle wobj_*-Schalter
+#   wobj_power=1     Stromgeneratoren/Hebel/Labor-Generator/Lichtschalter/Schaltkasten ueber den Server
+#   wobj_labdoor=1   Labortueren ueber den Server
+#   wobj_misc=1      Sirenen/Lampen/Radios/Treppenhauslicht synchron
+#   wobj_subway=1    U-Bahn-Teleport ueber den Server
+#   wobj_subtime=0   U-Bahn-Fahrt stellt die Weltzeit fuer alle vor (wie Singleplayer); aus, weil die Zeit geteilt ist
+#   wobj_suppress=1  Lokale Interaktion beim Gast per DLL unterdruecken
+#   wobj_allaccess=1 Allzugangskarte beim Server pruefen
+#   build_wdoorfix=1 Welttor-Korrektur ohne Greif-Animation (alle build_*-Schalter unter build_v2)
+#   build_kcard=1    Karten-/Hangartueren mit Allzugangskarte beim Server
+#   build_kcard_patch=1 Gast-Patch fuer sofortiges Oeffnen mit Karte
+#   build_kpclean=1  Tastenfeld-Fenster beim Server schliessen
+#   build_ldoor=1    Verschlossene Tueren auf/zu und Brecheisen ueber den Server
+#   build_pickinv=1  Abgebaute Bauteile/Brunnenwasser ins Inventar statt auf den Boden (auch Karten-Brunnen BP_WaterWell_C: gefuellte Flasche ins Inventar)
+#   build_disasm=1   Zerlegen ueber den Server
+#   build_bench=1    Bau-Werkbank-Tab an den Server
+#   build_beacon=1   Horden-Funkfeuer: keine lokalen Geister-Zombies
+#   build_doordir=1  Schwenkrichtung von Tueren synchron
+#   build_garagepow=1 Garagentor-Korrektur ohne Strom-Hinweis
+#   build_stationlock=1 Werkbank-Besitz nicht stehlen
+#   build_stationclose=1 Werkbank-Fenster bei Abstand schliessen
+#   build_kpown=1    Tastenfeld-Tuer: Gast als Besitzer vor der Code-Pruefung (Tuer-XP an den Gast statt an den Server-Geist)
+#   build_lpxp=1     Dietrich-Kiste: Durchsucht/Nachfuellen und Pluender-/Dieb-XP beim Server fuer den Gast buchen
+#   ai_tdis=1        Banditen-Geschuetz deaktivieren ueber den Server
+#   ai_looted=1      'Gepluendert' an Leichen fuer alle
+#   inv_scavxp=1     Pluender-XP beim Server
+#   inv_unmark=1     Lager-Markierung aufheben
+#   inv_toolxp=1     Werkzeug-Kisten (XP, Haltbarkeit)
+#   inv_bpbag=1      Rucksack-mit-Inhalt-Regel
+#   inv_trdnote=1    Haendler-Hinweis nicht doppelt
+#   inv_stationrep=1 Werkbank-Inventar fuer Gaeste adressierbar
+#   world_crate=1    Quest-Kisten-Belohnung beim Server
+#   world_poicrate=1 POI-Spezialkisten repliziert + XP
+#   vit_resp=1       Atemschutz-Anzeige beim Gast
+#   ui_note_pawn=1   Spieler-Hinweise des Servers an den Gast
+#   combat_credit_scale=1 Kill-XP auf Gast-Stufe skalieren (Rueckfall)
+#   combat_credit_sp=1 Boss-Skillpunkt an den Gast (Rueckfall)
+#   combat_infcredit=1 Infestations-Zuordnung (Rueckfall)
+#   car_svcnote=1    Tank-/Reparatur-Fehltext beim Gast unterdruecken
+#
+# Weitere Schalter (Runde 7/8, Nachtrag). Ohne Eintrag gilt der Wert hinter dem Namen.
+# Bauen, Besitz, Schloesser, Raids (ls_build)
+#   build_ownall=1   Owner-Trick fuer alle Bauteile (0 = nur Generator/Dusche/Brunnen wie frueher)
+#   build_ghostfix=1 Abbau-Item, das beim Geist landet, an den Gast umbuchen
+#   build_dropown=1  Kisten-Inhalt beim Abbauen beim Gast statt beim Geist ablegen
+#   build_tent=1     Zelte wie Kisten behandeln (Inhalt, Aufheben, Rechte)
+#   build_sleep=1    Bett/Schlafsack eines Gasts ueber den Server benutzen
+#   build_radio=1    Radio-/Jukebox-Fenster eigener und fremder Radios unterscheiden
+#   build_lockpatch=1 Dietrich-Minispiel beim Gast freischalten, solange der Server einen Dietrich im Inventar meldet
+#   build_trustclick=0 Baumodus auch ohne Svr_SpawnBuild-Hook nur auf Klick-Meldung des Gasts (unsicher)
+#   locks_luanull=1  Gesperrte Kisten/Tueren zusaetzlich in Lua blocken (auch ohne DLL-Zeile)
+#   locks_hooknull=0 Sperre nur ueber den Lua-Hook (alter Weg; automatisch, wenn die DLL fehlt)
+#   locks_pickcheck=1 Aufknacken pruefen: Start >= 1,5 s vorher, hoechstens 1 je 5 s, Dietrich im Server-Inventar
+#   locks_denyui=1   Wird eine offene Kiste gesperrt, schliesst der Gast das Fenster und gleicht das Inventar ab
+#   raid_unowned=1   Herrenlose Bauteile ausserhalb eines Claims sind raidbar
+#   raid_drop=1      Zerstoertes Bauteil laesst Material fallen
+#   raid_droploot=1  Zerstoerte Kiste laesst ihren Inhalt fallen
+# Kampf (ls_combat)
+#   combat_owner_weapons=1 Owner-Trick fuer Gast-Waffen (Treffer/XP beim Gast)
+#   combat_owner_world=1 Owner-Trick fuer Felsen, Baeume, Schrott, Muell beim naechsten Gast
+#   combat_owner_proj=1 Owner-Trick fuer Wurfwaffen/Projektile (Zuender laufen per Timer)
+#   combat_proj_check=1 Wurf/Rakete nur, wenn der Server Munition bzw. Wurfgegenstand verbraucht hat
+#   combat_credit_dry=0 Diagnose: Kill-Gutschrift nur loggen, nichts schreiben
+#   pvp_kill_xp=100  XP fuer einen Spieler-Kill im PvP (0 = keine)
+# Inventar (ls_inv)
+#   inv_credit_strict=1 Gutschrift von Resten nur bei echtem Verbrauch (nicht beim Umlagern/Ablegen/Verkauf); Munition gibt beim Schiessen kein Verbrauchs-Budget
+#   inv_store_empty=1 Leeres Inventar nach Ruhezeit speichern (z. B. nach dem Tod)
+#   inv_use_movecheck=1 Lokale Abnahme, die in einer anderen Kiste liegt, gilt als Verschieben, nicht als Verbrauch
+#   inv_lootprime=1  Kisten-/Leichen-Inhalt beim Server vorladen, bevor der Gast oeffnet
+#   inv_prime_fresh_s=10 Vorgeladener Inhalt gilt so viele Sekunden als frisch
+#   inv_netrep=1     Kisten in Gast-Naehe fuer die Replikation vorbereiten
+#   inv_carc_looted=1 Gelootete Kadaver/Leichen als "gepluendert" markieren (fuer alle)
+#   inv_ghostbox=1   Lokale Geister-Kisten beim Gast entfernen
+#   inv_resync=0     Einmaliger Inventar-Abgleich nach abgelehntem Tanken/Reparieren/Kauf (aus: der Neuabgleich vertauschte im Live-Test die Ausruestung)
+#   inv_resp_native=1 Nach dem Respawn die spieleigene Inventar-Anfrage abwarten, eigene nur bei leerer UI
+#   inv_respawn_wait=1 Respawn-Abgleich bis 10 s nachholen, wenn die Inventar-Komponente noch fehlt
+# Welt (ls_world)
+#   world_respawn_min=60 Felsen, Baeume und Schrotthaufen wachsen nach so vielen Minuten nach (Gaeste nehmen mit world_resp_hostcfg=1 den Wert des Hosts)
+#   world_scrap=1    Schrotthaufen ueber den Server abbauen (Ertrag beim Gast, Haufen fuer alle weg)
+#   world_scrap_add=0 Schrott direkt ins Inventar statt ueber die Inventar-Gutschrift
+#   world_owner=1    Schrotthaufen bekommen den naechsten Gast als Owner (Server-RPCs des Haufens)
+#   world_laptop=1   Laptop-Quests ueber den Server
+#   world_xp=1       Gast-XP aus Crafting, Buechern, POI-Entdeckung und Angeln beim Server gutschreiben
+#   world_xp_craftcheck=1 Crafting-XP nur mit echter Craft-Anfrage beim Server
+#   world_xp_craftcount=1 Crafting-XP-Menge = beim Server gesehene SERVER_RequestCraftItem(Drop) (hoechstens Gast-Angabe N); 0 = Gast-Angabe N
+#   world_xp_bookcheck=1 Buch-XP nur, wenn das Buch im Server-Inventar verbraucht wurde
+# Oberflaeche (ls_ui)
+#   ui_mates_clan=1  Auf der Karte nur Clan-Mitglieder zeigen
+#   ui_clanwp=1      Clan-Wegpunkte teilen
+#   ui_clanmsg_chat=1 Clan-Nachrichten im Chatverlauf
+#   ui_clanmsg_toast=0 Clan-Nachrichten zusaetzlich als Hinweis-Einblendung
+# Beitritt mit gespeichertem Inventar (Fix 23.10.: Startausruestung ueberlagerte den Spielstand)
+#   join_nokit=1     Rueckkehrer ohne Startausruestung spawnen (wie Laden im Einzelspiel); neue Spieler behalten sie
+#   inv_first_wait=1 Gast leert sein Inventar erst, wenn die erste Server-Antwort da ist (max. 4 s)
+#   inv_join_guard=1 Verschwinden beim Beitritt geladene Gegenstaende, wird diese Figur nicht mehr gespeichert
+#   cloth_ask_cap=1  Hoechstens 5 erfolglose Kleidungs-Nachfragen je Figur und Platz
+# Spielversion UE 5.6 (Update 23.10.)
+#   srv_boot_menu=1  Server-Boot: Titelbild/Hauptmenue selbst weiterschalten (5.6-Ablauf)
+#   srv_ls_watch=1   Server-Boot: haengenden Ladebildschirm des Menue-Levels erkennen und weiterschalten
+#   srv_load_fallback=1 Server-Boot: Weltstand ohne Spielstand-Pruefung laden, wenn die Pruefung nicht antwortet
+#   srv_force_load=0 Weltstand auch bei "andere Spielversion" laden (Vorsicht: alter Stand)
+#   build_crowdur=1  Brecheisen-Tuer: Haltbarkeit des Brecheisens auf dem Server abziehen (5.6)
+#   combat_boom_fuse=1 Zuender von Wurf-Sprengkoerpern dem Werfer zuordnen
+#   world_crate_prog=1 Quest-Fortschritt garantierter Kisten ueber die neue QuestTaskComponent
+#   world_xp_fish=1  Angel-XP beim Server gutschreiben (neues Angeln in 5.6)
+#   quest_marker56=0 Quest-Marker auf der Karte (5.6): 0 = aus, 1 = replizierte Host-Quest-Marker entfernen (unverifiziert), 2 = nur Diagnose (Host/Gast zaehlen Marker, entfernt nie)
+#   srv_nothumb=1    Server: kein Speicher-Vorschaubild (stuerzte unter UE 5.6 ohne Grafik beim Autosave ab)
+# Live-Fixes UE 5.6 (24.10.)
+#   combat_mrelay=1  Nahkampf: Gast erkennt Treffer lokal, Server prueft (Reichweite, Sicht, Tempo) und wendet sie an
+#   combat_mrelay_power=1 Power-Schlaege ueber das Relay
+#   combat_mrelay_harv=2 Nahkampf-Relay: hoechstens so viele Treffer je Schlag auf denselben Baum/Felsen
+#   combat_mrelay_fx=1 Treffer-Effekte beim Gast sofort lokal zeigen
+#   combat_mrelay_excl=1 Server-eigene Treffer der Gast-Waffe unterdruecken (keine Doppeltreffer)
+#   combat_mrelay_strict=1 Ziel-Klassen und Reichweite streng pruefen
+#   combat_mrelay_los=1 Sichtlinie pruefen (keine Treffer durch Waende)
+#   combat_mrelay_notify=1 Schlag-Start ueber das Anim-Notify erkennen (Schlagtempo pruefen)
+#   combat_mrelay_hafix=1 Treffer-Liste je Schlag richtig zuruecksetzen
+#   stat_force=1     Waffenwerte (Schaden) beim Server frisch lesen
+#   wake_v2=1        Zombie-Animation in Gast-Naehe wach halten (Schlaege treffen)
+#   alive_v56=1      Zerstoerte Objekte unter UE 5.6 sicher als tot erkennen
+#   inv_givecr=1     Cheat-Gegenstaende nicht doppelt anlegen
+#   cheat_ghostcar=1 Cheat-Fahrzeug nur auf dem Server erzeugen (keine lokale Kopie)
+#   ui_hudre=1       Gast: Zombie-Lebensbalken und Hinweis-Leiste nach Tod/Respawn wieder ins Bild
+#   world_harvest_sub=1 Baeume/Felsen: Entfernen fuer alle ueber den Server
+#   server_fps_v2=1  Server-Bildrate mit Spielern = LASTSIGNAL_FPS (Standard 60)
+#   server_fps_auto=1 Server-Bildrate bei Ueberlast automatisch senken
+# Live-Fixes 2 UE 5.6 (24.10.)
+#   cheat_rmpend=1   Cheat: lokalen Platzhalter des Gasts sofort entfernen (sonst Slot-Kollision mit dem echten Item)
+#   inv_pend_ack=1   Gast quittiert entfernte Platzhalter, erst dann legt der Server das Item an
+#   inv_pend_ack_ms=3000 Hoechstwartezeit auf die Quittung (ms)
+#   inv_pend_defer=1 Rueckfall ohne Quittung: Item-Anlage kurz verzoegern
+#   inv_pend_defer_ms=1000 Verzoegerung im Rueckfall (ms)
+#   inv_cont_secs=0  Kisten-Liste nur nach einem Weltwechsel neu aufbauen; > 0 = zusaetzlich alle so viele Sekunden (mind. 30; Runde 8: 900, davor 120 = Ruckler)
+#   leave_live_pawn=1 Beim Verlassen auch nach einem Respawn die aktuelle Figur speichern
+#   combat_mrelay_yield=1 Nahkampf-Relay: Ertrag von Baum/Stein direkt ins Gast-Inventar
+#   combat_fire_diag=1 Schuss-Diagnose beim Gast: eine Zeile je Aenderung (max. 30) mit Waffe, FireReady, Abzug-Slot, Kammer/Magazin, Owner, Socket, Slot-Gegenstand des Inventar-Widgets und allen stillen Sperren (SafeZone, Inventar, Waffenwechsel ...)
+#   world_harvest_mesh=1 Gast: Aussehen gespawnter Steine/Baeume setzen (wird vom Spiel nicht uebertragen)
+#
+# Runde 9 (Fix-Runde 24.10.). Ohne Eintrag gilt der Wert hinter dem Namen. Jeder neue Weg schaltet sich bei Fehlern selbst ab (Log FLAG_DOWN)
+# und wird nach core_down_expire erneut versucht. Pruefungen mit Standard 0 (combat_hitcheck_deny, combat_dur_gate, build_nobuild, inv_free_credit)
+# bzw. vit_rm_check=1 loggen nur: erst nach einer sauberen Live-Sitzung scharf schalten.
+# Interne Ausfall-Namen im Log (keine Schalter, nicht eintragen): native_n6, inv_hooks9, combat_sde_task, combat_fd_task, combat_c_ev, cb_jan, cb_mhr, w_look_host
+# Kern (main.lua)
+#   world_hygiene=1  Weltwechsel (Beitritt/Trennen/Kick): gemerkten Controller, Fahrzeug-, Serverlisten-, Chat-, Schuss- und Zombie-Verweise vergessen, Mitspieler-Zustand zuruecksetzen, Hauptschleife/Tasten-Schleife erst nach dem Vergessen; dazu Figurenliste 0,2 s statt 1 s und Zombie-Caches nur als Pfade (CORE-8/CORE-19). Lesen auch ls_core (Aufgaben ruhen nach einem Weltwechsel bis zum Vergessen, hoechstens 10 s), ls_net (Gegenstellen/Caps bei neuer Welt weg, neuer Handshake), ls_inv/ls_world/ls_build/ls_car (Tabellen je Verbindung/Objekt aufraeumen). 0 = alter Weg
+#   leave_dead_ref=1 Mitspieler trennt nach dem Tod: tote Figur nicht mehr merken; beim Trennen nur die aktuelle Figur dieses Controllers sichern und entfernen (sonst Absturz/fremde Figur nach Tod + Warten auf dem Todesbildschirm)
+#   appear_prune=1   Aussehen getrennter Spieler nach 60 s vergessen (Host und Gast), je Beitritt hoechstens 4 Aussehen pro Sekunde an einen Gast (kein Stoss zuverlaessiger Nachrichten)
+#   untrusted_paths=1 Aussehen von Gaesten: nur bekannte Felder, Pfade nur unter /Game/PlayerModel/ laden, Klasse je Feld pruefen, nur bereinigt weitergeben (lesen auch server.lua: LoadAsset nur fuer sichere Gast-Pfade, ls_inv: Gast-Pfade in inv_pend nur als Item-Daten-Asset, ls_car: Kauf-Pfad erst nach der Preisliste, ls_world: q_talk-Klassen)
+#   noise_dll=1      Geraeusche des Gasts per DLL-Beobachter (ReportNoiseEvent an der Aufrufstelle, nur eigene Aufrufe) statt Lua-Hook; braucht die DLL mit maxargs=6, sonst/bei Ausfall automatisch der alte Hook. Geraeusche besitzerloser Welt-Objekte, die nur beim Gast laufen, gehen dann nicht mehr an den Host (0 = alter Hook mit allem)
+#   noise_nosteps=0  1 = eigene Schritte (Tag Noise, Reichweite 1-900) nicht an den Host schicken (meldet der Host fuer die Gastfigur selbst); erst nach einem Schleich-Test einschalten
+#   shot_shake_hooks=0 1 = alte Kamerawackel-Hooks beim Gast (fremde Schuesse wackeln die eigene Kamera nicht); 0 = keine Hooks in der Schuss-Kette, nur ein Merk-Hook auf MC_WeaponEffects (Schusston fremder Waffen)
+#   shot_flash=1     Gedaempfte Schuesse anderer Spieler: Muendungsfeuer am Waffen-Mesh zeigen, wenn das Spiel es am (nicht replizierten) Daempfer nicht anzeigen kann (COMBAT-17)
+#   log_quiet=1      (Standard auf dem dedizierten Server 1, sonst 0) Diagnose-Logs Zustand/Verbindungs-Beobachter/Tempo aus; dev=1 zeigt sie immer; gilt auch in server.lua (Medizin-Diagnose nur mit dev=1, Admin-Befehle von Nicht-Admins hoechstens 1 Logzeile/min je Verbindung)
+#   pvp_hbdmg=1      PvP an: wer innerhalb pvp_logout_s nach einem Treffer eines anderen Spielers das Lebenszeichen (hb) abreisst, wird eingefroren, bleibt aber verwundbar (sonst unverwundbar per Kabelziehen); danach wie bisher unverwundbar (PLAYER-13)
+#   pvp_logout=0     1 = PvP an und im Kampf getrennt: die Figur bleibt pvp_logout_s ohne Spieler stehen (verwundbar), erst dann sichern/entfernen; Tod in der Zeit = Ausruestung in der Todes-Kiste. Wiederkehr in der Frist loest sie sofort auf. Standard aus (Live-Test noetig)
+#   pvp_logout_s=30  Sekunden: Kampf-Fenster nach dem letzten Treffer eines anderen Spielers (pvp_hbdmg/pvp_logout) und Stehzeit der Figur (pvp_logout), 5-600
+#   move_check=1     Gast-Position plausibel? Waagrecht schneller als MaxWalkSpeed*2+600 uu/s (Gehen/Schwimmen, ohne Fahrzeug, nicht direkt nach Mod-Teleport) wird geloggt; 3 Verstoesse in 10 s -> Client-Position kurz nicht uebernommen (PLAYER-16)
+#   leave_forget=1   Mitspieler getrennt: alle main.lua-Tabellen dieser Verbindung (Controller-Key) und alte Figuren-Merker vergessen; Daten je Mitspieler-ID bleiben (CORE-30)
+#   perf_hotpath=1   Leistung: NetModeName je Welt 0,05 s merken, Empfangs-Schleife beim Gast ruht ohne Nachrichten (CORE-27). IsAlive ist ohne Schalter closure-frei (gleiche Pruefungen)
+#   perf_rates=1     Leistung: Server-Pausepruefung nur alle 5 s, Steuerungs-Pruefung alle 3 s, Menue-Teillevel je Welt einmal, Tasten-Abfrage auf dem dedizierten Server aus, Save_Player des Gasts einmal je Welt (CORE-31)
+#   spawner_idle_end=1 spawner_stop=2: nach 2 Durchlaeufen ohne neu gestoppte Spawner, in denen alle vom Host kamen (5.6), fuer diese Sitzung keine Durchlaeufe mehr (AI-8)
+#   admin_pid=1      Admin-Panel: Kick/Ban/Goto/Bring per PlayerId ("pid:<n>", 4. plist-Feld) statt der Listennummer #N; alter Server ohne 4. Feld -> weiter #N (PLAYER-20). Die Auswahl merkt sich die PlayerId und folgt ihr bei jeder Spielerliste (Spieler weg -> Auswahl und Bestaetigung aufgehoben); KICK/BAN zielt auf pid:<Id>
+#   chat_deathscreen=1 Chat auch auf dem Todesbildschirm oeffnen; beim Schliessen dort wieder Maus/UI-Eingabe wie das Spiel (PLAYER-21)
+#   bp_hook_first=1  Debug-Menue-Zeitlupe an den Host weiterleiten und Auto-Werte beim Anschauen: Hook-Koerper als erster Callback (UE4SS 3.0.1 ruft bei BP-Funktionen nur einen). Construct-Hook merkt nur vor, freie Kamera als Mitspieler nach hoechstens 0,1 s aus (Schnell-Loop "cheatcam"). Zeitlupe: Construct setzt den Text selbst (OnTextChanged ohne Eingabe) -> diese Markierung verwerfen Construct-Hook und "cheatcam", Basis = Stand beim Oeffnen (Inventar/Radialmenue setzen die lokale Zeitlupe selbst, z. B. auf 1); die Sekunden-Pruefung wartet auf "cheatcam" und schickt nur eine echte Aenderung danach an den Host (sonst Zeitlupe fuer alle zurueckgesetzt + Admin-Protokoll bei jedem Oeffnen). Grenze: Regler geaendert, Menue zu und vor der naechsten Sekunden-Pruefung wieder auf -> Aenderung verworfen (Regler erneut bewegen). Wert wird <=0,1 s nach der Eingabe festgehalten (Schnell-Loop "cheatdil"; Inventar/Radialmenue mit Game.SlowTime setzen sonst 0,25/0,2, Inventar-Ende/Radial-Loslassen 1). 0 = alte Registrierung (Koerper im toten zweiten Callback)
+# Server (server.lua, nur dedizierter Server)
+#   srv_journal_v2=1 Gast-Journal v2: atomar (.tmp/.bak) mit Merkern #F/#S/#N (Absturz zwischen Welt-Speichern und Festschreiben nimmt die eingefrorenen .pending), nur verbundene Gaeste im Journal, Werte (.werte.txt) und Bett (.spawn.txt) mitjournalisiert, Festschreiben im 100-ms-Loop
+#   srv_store_freeze=1 Server stoppt: nach dem Welt-Speichern schreibt niemand mehr Gast-Slots (Coop.GuestStoreFrozen); beim Festschreiben gilt der eingefrorene Stand auch fuers .sav (.sav = .commit = Welt)
+#   srv_cmd_rename=1 Konsolenbefehle: server_cmd.txt erst nach server_cmd.work umbenennen, im naechsten Durchlauf lesen (keine verlorene Zeile, auch kein verlorenes shutdown; +1 s Verzoegerung)
+#   srv_save_backup=1 Nach fertigem Festschreiben (Welt + Gast-Kopien passen) bei start.sh eine Sicherung anfordern (backup_req.txt), hoechstens alle LASTSIGNAL_BACKUP_MINUTES (Standard 30, 0 = nur beim Start)
+#   srv_auto_restore=0 1 = Welt-Spielstand nicht ladbar (CheckSaveFiles OnFailed): restore_req.txt schreiben, start.sh spielt beim naechsten Start die neueste Sicherung ein (nur mit start.sh-Teil; Verlust bis zur letzten Sicherung)
+#   srv_auth_gate=1  Passwort-Server: neue Gaeste bleiben eingefroren hinter dem Ladebildschirm, bis das richtige Passwort da ist (Srv.AuthWait); ohne Passwort Kick 30 s nach dem ersten Sehen
+#   srv_ownjournal=1 owners.txt (Besitz/Claims/Schloesser) zum Welt-Speichern einfrieren (owners.pending), festschreiben (owners.commit) und nach unsauberem Ende zuruecksetzen; aus = alte Kopien werden geloescht
+#   srv_joinmsg=1    Beitritt/Abgang im Chat an alle ("X ist beigetreten" erst, wenn er wirklich im Spiel ist), /players (/online) und /help fuer alle, Willkommens-Text (LASTSIGNAL_MOTD) erst 2 s nach dem Ladebildschirm und zusaetzlich als Hinweis
+#   srv_afk_min=0    Minuten ohne Laufen/Umsehen bis zum AFK-Kick (immer erst ein Hinweis, Kick fruehestens 1 min danach; nie Admins); 0 = aus
+#   srv_afk_full_only=0 1 = AFK-Kick nur, wenn der Server voll ist (nur mit srv_afk_min > 0)
+#   chat_clantag=1   Clan-Name vor dem Spielernamen im Chat an alle ("[Clan] Name")
+#   srv_endprotect=1 Spawn-Schutz endet sofort, wenn der Geschuetzte selbst angreift (ls_combat ruft Srv.EndProtect bei Nahkampftreffer/Schuss); gibt auch die Respawn-Sperre von ls_player frei (EndHold)
+#   srv_drophook_first=0 Server: Fallenlassen-Hook (BP_JigHelperComp:RequestDropAsPickup) mit dem Koerper als erstem Callback (UE4SS 3.0.1 ruft bei BP-Funktionen nur einen Callback). Der Koerper liest KEINEN Parameter (ActorRef ist bei BP->BP-Aufrufen im Hook nicht lesbar, Stapel-Muell = Absturzgefahr), er merkt nur die Zeit; danach sucht der Server (hoechstens 1x/s, zwei FindAllOf) frisch erzeugte Pickups in 6 m um einen Spieler, merkt sie als fallengelassen, repliziert sie sofort und raeumt sie nach LASTSIGNAL_CORPSE_MINUTES weg (Standard 60, 0 = nie; nie, solange ein Spieler in 15 m steht). Abwurf ausgeruesteter Waffen/Rucksaecke (vorhandener Actor) wird nicht erfasst. Standard aus (Suche ist eine Heuristik: frische Welt-Beute neben einem Spieler im selben Moment koennte mitgezaehlt werden). 0 = alter Weg (Hook-Koerper laeuft nie, Fallengelassenes bleibt fuer immer liegen)
+#   srv_drop_moved=1 Server: fallengelassener Gegenstand, der seit der letzten Aufraeum-Pruefung (30 s) bewegt (> 20 uu) oder gedreht (> 5 Grad) wurde (aufgehoben und neu abgelegt, auch am selben Fleck: der Ausruestungs-Abwurf behaelt die Drehung vom Sockel), zaehlt sein Alter neu (LASTSIGNAL_CORPSE_MINUTES ab jetzt). 0 = alter Weg (nur beim Aufraeumen sichtbar Getragenes faellt heraus)
+#   srv_drop_heldscan=1 Server: alle 2 s pruefen, ob ein gemerkter fallengelassener Gegenstand wieder getragen wird (Owner/Anhang) oder weg ist -> faellt samt Alter aus dem Aufraeumen. 0 = nur bei der Aufraeum-Pruefung alle 30 s
+#   srv_gamedrop_out=1 Server: Spiel-Weg beim Ablegen (drop_mode 2 und letzter Ausweg in Modus 0) ruft RequestDropAsPickup mit Ausgabe-Tabelle und erfaehrt so, ob/welcher Actor entstand. RequestDropAsPickup nimmt ItemID nur fuer die PickupClass und setzt weder Daten-Asset noch Menge (das Spiel macht das erst im Aufrufer per SetPickupContainerData), daher setzt der Server beides selbst wie beim Selbst-Spawnen (nur auf einem echten Pickup): Actor -> Daten/Menge gesetzt, vor den Spieler gesetzt; nichts entstanden -> selbst spawnen; keine Rueckmeldung -> kein Ersatz-Spawn, als abgelegt gezaehlt (Menge unbekannt: Standardmenge des Spiels). 0 = Spiel-Weg aus, drop_mode 2 arbeitet wie Modus 0 (selbst spawnen)
+#   srv_empty_save=1 Geht der letzte Spieler, 15 s spaeter die Welt speichern (mit Gast-Journal und Sicherung): im Leerlauf nie ungespeicherter Fortschritt
+#   srv_adminlog=1   Admin-Protokoll admin_log.txt im Mod-Ordner (Zeit | wer | Befehl | Ergebnis): Konsole, Admin-Befehle im Spiel, abgelehnte Versuche (1/min), /admin-Anmeldungen (ohne Passwort), AFK-Kicks, Neustarts; ab 2 MB -> admin_log.1.txt
+#   srv_stopping_marker=1 Server stoppt: server_stopping.txt sofort bei stop schreiben, damit start.sh seine Beenden-Frist (STOP_LIMIT) schon im Zustand "stopping" startet (Haenger vor QuitGame endet nach der Frist); server_stopped.txt bekommt unabhaengig davon " busy", wenn EMS nach 30 s noch speicherte (start.sh macht dann keine Startsicherung)
+#   Umgebungsvariablen (Container/start.sh, nicht in coop.txt): LASTSIGNAL_BACKUP_MINUTES (30; 0 = Sicherung nur beim Start), LASTSIGNAL_BACKUPS (5; 0 = aus),
+#     LASTSIGNAL_STOP_WAIT (45 s), LASTSIGNAL_RESTART_AT=HH:MM (taeglicher Neustart, Uhrzeit des Containers, oft UTC; Ansagen 10/5/1 min und 30 s; nie in der ersten Stunde nach dem Start),
+#     LASTSIGNAL_MOTD (Willkommens-Text), LASTSIGNAL_ADMIN_PASSWORD (leer = aus; sonst Admins zusaetzlich "/admin <Passwort>" je Verbindung), LASTSIGNAL_ADMINS (auch "steam:<17 Ziffern>": dann ID UND Steam-ID noetig),
+#     LASTSIGNAL_CORPSE_MINUTES (60; tote Zombies und - mit srv_drophook_first - von Spielern fallengelassene Gegenstaende verschwinden danach, nie solange ein Spieler in 15 m steht; 0 = nie)
+#   Konsole (server_cmd.txt): restart <Minuten>|cancel (ohne Argument: Stand), flags [list] (abgeschaltete Schalter wieder an), mute [Spieler], unmute <Spieler|ID>, vehicles, vehicle_rm <Name>; Spieler auch als pid:<PlayerId>
+#   Sicherungen (start.sh): saves/_backup/<stempel>/ samt Mod-Dateien (_mod/: guest_journal.txt und owners.pending werden mit zurueckgespielt, admin_log.txt und bans.txt nur gesichert);
+#     restore.txt bzw. restore_req.txt spielt beim naechsten Start zurueck; scheitert das, startet das Spiel erst wieder, wenn der Admin saves/_backup/restore_failed.txt loescht
+# Netz (ls_net, ls_core)
+#   net_peer_fail=1  Handler-Fehler je (Art, Gast) zaehlen: ein einzelner Gast zaehlt hoechstens 2 Fehler je 60 s fuer die Abschaltung einer Art (net_h_<art>, > 3 in 60 s), darueber nur secwarn - ein (modifizierter) Gast schaltet nichts fuer alle ab
+#   core_down_expire=600 Sekunden, nach denen ein wegen Fehlern abgeschalteter Schalter (FLAG_DOWN) wieder versucht wird (FLAG_UP im Log); die Frist verdoppelt sich mit jeder Abschaltung (hoechstens 1 h); 0 = aus bis zum Neustart (alter Weg). Konsole "flags" (server.lua, Core.ResetFlags) schaltet alle sofort wieder an
+# LastSignalCore.dll (ls_native)
+#   ai_n6_list=safe  N6-Liste netcore_n6.txt: safe = nur Spawner, Wellen (Beacon/Befall), Quest-KI und POI-Manager + Funktions-Eintraege (Skalierung nach Stufe/Tagen, Umgebungspruefung der Prefab-Spawner; nur mit neuer DLL n6fn=1); full = alte eingebaute Liste mit Zombies/Tieren/Ernte (Kill-Credit kann an den naechsten Gast gehen)
+#   drop_outer=1     Fallenlassen aus einer fremden Kiste (Todes-Kiste, Kofferraum): landet beim anfragenden Spieler statt beim Besitzer der Kiste (DLL loest JigMP_OnRequestDropItem aus den aeusseren Rahmen; braucht neue DLL, Status drop_outer=1)
+#   native_evlost=1  Diagnose: Kopfzeile von netcore_events.txt hinten " lost=<tag>:<n>,..." (neue DLL) je Tag lesen = vor Ablauf der 10 s aus dem Fenster gefallene Ereignisse (Summe der DLL-Sitzung); Ausgabe im Test native_ev ("aus dem Fenster gefallen je Tag"). Genauer als "verloren" (nur Luecke vor dem ersten neuen Ereignis). Eigener Autofallback: ein Fehler schaltet nie die Ereignis-Zustellung (native_ev) ab. 0 = aus
+# Inventar (ls_inv; inv_keepinv, cheat_clamp, cheat_rmpend2, inv_store_dedup in main.lua)
+#   inv_keepinv=1    Server-Regel Difficulty.KeepInventory (ohne LoseAllItemsOnDeath): beim Tod eines Gasts die gespeicherte Ausruestung nicht loeschen, sondern mit dem Stand der Figur sichern (Trennen/Neustart auf dem Todesbildschirm verliert nichts)
+#   cheat_clamp=1    Cheat-Menue: Menge auf MaxStack des Gegenstands begrenzen wie im Spiel (ItemButton @0667), statt z. B. 50 Aexte (INV-12)
+#   cheat_rmpend2=1  Cheat-Menue (mit cheat_rmpend): Platzhalter-Stand schon beim Oeffnen, Server-bekannte UIDs (Digest inv_sum) nie entfernen, "give ... rm" an den Host wenn der Platzhalter weg ist (keine Gutschrift), sonst 1,5 s Nachlauf (INV-13). " rm" nur an Hosts mit Cap invgrm (ls_inv), sonst altes Format "give <Pfad> <n>"
+#   inv_store_dedup=1 Host: die 10-s-Sicherung G.Store auslassen, wenn ls_inv (inv_store) den Gast schon selbst speichert; Werte weiter alle 10 s (INV-24)
+#   inv_craft_one=1  Gast: Crafting nur einzeln. UE4SS-Hooks laufen NACH dem BP-Rumpf: Mengen-Knopf setzt CountIndex sofort danach wieder auf 1 (Anzeige frischt der 0,25-s-Takt auf), Crafting-Knopf bleibt bis zur Server-Antwort gesperrt. Nachklicken binnen 0,25 s faengt der Host ab (inv_craft_dupkey)
+#   inv_craft_guard=1 Host: Crafting-Nachpruefung im Ledger (Spiel-Verbrauch simuliert). Ab 2 ungedeckten Crafts in 60 s: fehlende Zutaten nachbelasten, sonst Ergebnis entfernen; einzelner Fall nur Log "Crafting-Schutz (nur Log)"
+#   inv_craft_cnt=1  Host->Gast (Cap invcnt): nach Crafting mit vollem Inventar die neuen Zutaten-Stueckzahlen melden (inv_cnt -> ClientUpdateCount), sonst bleiben Geister-Zutaten
+#   inv_leave_seen=1 Leer-Speichern beim Verlassen/Welt-Speichern frisch gezaehlt und ab "Figur hatte Items" (SeenFull) sofort; sonst Duplikat bei Ausraeumen + sofort Trennen
+#   inv_prime_strict=1 Loot-Prime nur, wenn die Kiste erst nach dem Oeffnen adressierbar wurde (Gast schickt Alter, Cap invps), 15 s je Gast+Kiste; Log "MakeAddr ohne AddrAt". Verhindert die zweite Daten-Antwort (Items geloescht)
+#   inv_repair=1     Reparatur-Sets (Waffe/Ruestung/Anbauteil, Kontextmenue und Ziehen) und Strahlenfilter fuer Gaeste: Gast meldet (inv_rep, Cap invrep), Host rechnet wie das Spiel und schreibt die Haltbarkeit
+#   inv_credit_split=1 Ledger-Gutschrift je Item statt je Fenster (Reinigen von Wasser, Schiessen + Verbrauch im selben Fenster); Haendler-Sitzung zaehlt als offen (Verkauf ist kein Verbrauch)
+#   inv_battery_patch=1 Gast: Bytecode-Patches inv_batt_a/b (CheckBatteryLevel) und inv_batt_c/d (UseBattery): Batterie "nicht gefunden" = voll, sonst geht die Lampe nicht an bzw. 0,1 s spaeter wieder aus. Entladung ueber den Host (inv_battery_drain)
+#   inv_ui_view=1    Gast: Inventar-Sicht aus den UI-Containern, Abgleich mit dem Host-Digest, Log "UI-Abgleich: N fehlen, M Geister" (nur Erkennung); Host markiert Items in Item-Containern mit "~"
+#   inv_reconcile2=0 Gast: Reparatur zum UI-Abgleich (Geister-Widgets entfernen, bei Fehlenden bewachter Voll-Abgleich, hoechstens alle 60 s). Erst nach einem sauberen Live-Test einschalten
+#   inv_resync_nobar=1 Voll-Abgleich ohne Hotbar-Wiederherstellung (war der Weg der vertauschten Ausruestung); leere Hotbar danach wird nicht gespeichert
+#   inv_repairslot=1 Gast: E5 RepairSlot fuer ls_combat (Waffen-Slot ohne Item) = bewachter Voll-Abgleich, hoechstens 2 je 10 min, nie bei offener Kiste/Haendler
+#   inv_station_tab=1 Host: Kochstelle/Werkbank (BP_CookingStation_C/BP_CraftingStation_C) bekommen ihre Rezepttabelle beim Host und werden repliziert (Kochen/Craften fuer Gaeste). Laufzeit-Stationen (Siedlungen) kommen beim Gast doppelt an -> inv_station_ghost. Log je Station: Karte/Laufzeit + Eltern-Actor
+#   inv_fish_proof=1 Host: Rohfisch-Platzhalter nur nach einem Fang beim Host (ls_world FishNote/FishProof), hoechstens 1 Fisch je Fang, sonst "no|fisch". Wirkt nur, wenn ls_world FishProof setzt
+#   inv_admin_free=0 Admin-Regel (e): Platzhalter von Passwort-Admins ohne Pruefung anlegen. Aus = Cheat-Items nur ueber inv_give + GiveCredit (sonst Dupe beim Teilen/Reinigen/Angeln). Gutschrift-Wege immer als Nicht-Admin testen
+#   cheat_defatt=1   Admin-give: Standard-Anbauteile (DefaultAttachments, z. B. Magazin/Visier) je nicht stapelbarem Item wie der Cheat-Knopf im Einzelspiel - ins Inventar, nicht montiert
+#   inv_patchwatch=1 Gast: Bytecode-Patches pruefen (patch_durability, Batterie-Patches in netcore_status.txt). Laenger als 10 s nicht aktiv -> Log "Bytecode-Patch NICHT aktiv" + Hinweis "Spiel-Update erkannt, Waffen-Patch fehlt" (einmal je Sitzung)
+#   inv_resp_guard=1 Gast nach Respawn: eigene Inventar-Anfrage nur, wenn der Host gerade antwortet (Empfang < 0,5 s), sonst bis 10 s warten. Verhindert die zweite Daten-Antwort bei Server-Haenger (Items geloescht)
+#   inv_free_credit=0 Ernte-Gutschrift (Regel d: Holz/Stein/Fleisch/Fisch-Platzhalter ohne Server-Quelle): 0 = nur protokollieren ("Ernte-Gutschrift (nur Log)"), 1 = nur mit Host-Nachweis (Fang ueber ls_world FishProof), sonst "no|ernte". Erst nach einer sauberen Sitzung und Umbau der Erzeuger auf M.Credit einschalten
+#   inv_refill_hold=1 Host: Kiste fuellt sich nicht nach, solange ein Gast sie offen hat (bzw. 10 s nach Laden im Namen des Gasts); danach Nachfuell-Timer neu wie im Spiel. Nie bei Lager-Kisten
+#   inv_badsave=1    Host: unlesbarer Gast-Spielstand (Laden scheitert/0 Container) wird nicht still durch die Startausruestung ersetzt: .sav -> .bad-<Zeit> (bleibt liegen), letzte Festschreibung (.commit) wird geladen
+#   inv_battery_drain=1 Batterie-Verbrauch der Gast-Waffenlichter/Entfernungsmesser (Cap invlt): der Gast meldet (inv_light), der Host entlaedt wie das Spiel und schaltet bei leer aus (inv_lightoff). 0 = mit inv_light_local_off=1 gehen diese Lampen wie vor INV-6b lokal aus. Taschenlampe: Host entlaedt selbst (Spiel-Timer), leere/fehlende Batterie -> inv_flash_guard
+#   inv_dropfast=1   Host: Abgelegtes sofort fuer alle sichtbar (Hook auf SERVER_RequestDropItem setzt nur den 3-s-Takt der Boden-Replikation zurueck; Koerper jetzt als erster Callback, war vorher wirkungslos)
+#   inv_audit_log=1  Host: Item-Protokoll NetTest_Guests\audit_<Datum>.log (Zeit, Gast-ID, Name, Daten-Asset, Menge, Regel b-g/give/craftguard/repair), je Sekunde angehaengt
+#   inv_prune=1      Host: Pfad-Tabellen verschwundener Objekte alle 60 s aufraeumen (CORE-30, nur mit world_hygiene=1); der Name ist zugleich der Autofallback
+#   inv_rep_strict=1 Host: Reparatur/Filter streng pruefen. Filter (rf): Ziel muss DA_RadiationFilter und nicht voll sein, nachgefuellt wird erst nach belegtem Verbrauch des gezogenen Items (Ledger-Abnahme dieser UID, mit inv_rep_proof je verbrauchtem Filter-Nachfuellitem (1 Stueck je Ledger-Lauf) eine Fuellung, bis 3 s Wartezeit), sonst "inv_rep_bad". Sets (w/wd/t/a/ad): Ziel-Typ wie das Spiel (Waffe/Anbauteil/Ruestung oder Kontextmenue-Option des Items). Grenze: Item aus einer offenen Kiste auf den Filter gezogen = kein Beleg im Gast-Inventar -> abgelehnt. 0 = alter Weg (Name "filter" genuegt)
+#   inv_craft_dupkey=1 Host (mit inv_craft_guard): gleicher Crafting-Auftrag (Station, Rezept, dieselben Zutaten-UIDs) binnen 3 s = Doppelklick/Mehrfach-Menge aus veralteter Gast-UI -> sofort nachbelasten/entfernen statt erst ab 2 in 60 s; dabei zaehlt auch Teilverbrauch
+#   inv_station_ghost=1 Gast: lokale Kopie einer Laufzeit-Station (Siedlungs-Kochstelle/-Werkbank, CAC-Kind) entfernen, sobald die replizierte Host-Station <= 1 m daneben steht (sonst doppelt, Crafting an der lokalen Kopie scheitert). Log "Lokale Stations-Kopie ... entfernt"
+#   inv_flash_guard=1 Host: Taschenlampe eines Gasts ohne laufenden Server-Batterie-Timer (Batterie leer/fehlt) nach 1 s fuer alle aus (MC_Flashlight(false)), unabhaengig von inv_battery_drain. 0 = Pruefung nur mit inv_battery_drain wie bisher
+#   inv_light_local_off=1 Gast: ohne Host-Entladung (Cap invlt fehlt: Host inv_battery_drain=0, Autofallback, alter Host) Waffenlicht/Entfernungsmesser lokal aus wie vor INV-6b statt unbegrenzt an. Taschenlampe bleibt beim Host. 0 = unbegrenzt (bewusst kein Verbrauch)
+#   inv_cons_open=1  Host: Einzel-Abnahme bei offener Kiste/Haendler fuer den Laptop-Scan zaehlen (LastConsume mit AllowOpen, ls_world; auch ls_vit vit_rm_open und der Zaehler inv_cons_count). Sonst ist der Laptop beim Scannen mit offener Kiste weg und keine Quest startet
+#   inv_cons_count=1 Host: Ledger zaehlt je Verbindung die Abnahmen je Item (ohne offene Kiste; mit inv_cons_open auch Einzel-Abnahmen bei offener Kiste/Haendler, eigener Zaehler). LastConsume liefert die Anzahl als 3. Wert (immer eine Zahl, 0 = keine); ls_world (world_lapscan_count) bucht Laptop-Scans damit je Abnahme, sodass zwei Laptop-Abnahmen vor der ersten Buchung beide zaehlen statt dass der zweite Scan verfaellt. 0 = keine Zaehler, 3. Wert nil (ls_world nimmt dann wie bisher nur den Zeitstempel)
+#   inv_cons_nodrop=1 Host: Abwurf auf den Boden (SERVER_RequestDropItem) zaehlt im Ledger nicht als Verbrauch (LastConsume: Laptop-Scan, Buch-XP, Wurf-Pruefung ls_combat, Heil-Pruefung ls_vit) und ist kein Filter-Beleg fuer inv_rep rf (inv_rep_strict). Der Hook (nur Tabelle, auch ohne inv_dropfast) merkt die abgeworfene Item-UID; nur diese Abnahme wird ausgenommen, andere Abnahmen im selben Moment zaehlen normal. Ausnahme Behaelter: ist das abgeworfene Item ein Rucksack/eine Waffe/ein Magazin (haelt Unter-Container), verschwindet dessen Inhalt im selben Aufruf mit (RemoveGetInfo) -> alles, was in diesem Ledger-Lauf ganz verschwindet, zaehlt nicht (auch frisch hineingelegte Items; Log "Abwurf eines Behaelters ... enthaltene Items"). Grenze: echter Verbrauch des letzten Stuecks im selben Takt wie ein Behaelter-Abwurf zaehlt nicht. Ist die UID nicht lesbar, gilt ersatzweise ein Ledger-Lauf der Gast-Komponente (Fenster inv_ledger_ms + 1 s, mind. 1,5 s). Log "Abwurf ... keine Abnahme fuer LastConsume". Verhindert: Laptop/Buch (auch im Rucksack) abwerfen + gefaelschte Meldung = Rueckgabe/XP. Abwurf (auch Behaelter-Inhalt und frisch Hineingelegtes) gibt auch keine Rest-/Budget-Gutschrift (inv_credit_split/inv_credit_strict; sonst Lootbox abwerfen = 8 beliebige Platzhalter); Ausnahme: Kleidung, deren Taschen beim Zerreissen abgeworfen wurden (Halter eines abgeworfenen Items). 0 = Abwurf zaehlt wie bisher als Abnahme
+#   inv_rep_proof=1  Host (mit inv_rep_strict): Filter-Beleg (inv_rep rf) nur aus echtem Einzel-Verbrauch: das gezogene Item muss "Jig.ItemOverItem.RefillRadFilter" anbieten (OverItemOptions wie GetValid; Tags nicht lesbar -> Name enthaelt "filter"), genau 1 Stueck je Ledger-Lauf (RefillRadFilter verbraucht 1), kein Wachstum desselben Item-Typs im selben Lauf (Teilen/Stapeln) und keine Crafting-Zutat. Sonst "inv_rep_bad". Mit inv_cons_nomove ist Umlagern/Teilen/Stapeln in eine andere Komponente (Kiste, Kofferraum, Haendler-Verkauf) kein Beleg mehr (ohne: 1 Stueck in eine Kiste legen zaehlt als Beleg). Grenze: zwei Fuellungen aus demselben Stapel innerhalb von 0,5 s -> abgelehnt. 0 = jede Abnahme der UID ausser Abwurf genuegt
+#   inv_cons_nomove=1 Host (braucht inv_cons_nodrop): Umlagern/Teilen/Stapeln aus dem eigenen Inventar in eine andere Komponente (Kiste, Kofferraum, Haendler-Verkauf; SERVER_RequestMoveItemToAnotherComp/SplitItem/StackItem, Hooks nur Tabelle) ist kein Verbrauch (LastConsume, Laptop-Zaehlung), keine Rest-/Budget-Gutschrift und kein Filter-Beleg fuer inv_rep rf. Herausnehmen aus Kiste/Kauf bleibt ungemerkt. RPC auf einer fremden Komponente mit From = Gast-Inventar: siehe inv_cons_nomove_any. 0 = Umlagern in eine Kiste zaehlt wie bisher als Abnahme
+#   inv_cons_nomove_any=1 Host (braucht inv_cons_nomove + inv_cons_nodrop): Umlagern/Teilen/Stapeln zaehlt auch dann nicht als Verbrauch, wenn das RPC auf einer ANDEREN Komponente lief und From eine Gast-Figur-Komponente ist (das Spiel entfernt aus From, nicht aus der aufrufenden Komponente; ein veraenderter Gast als Owner seiner Kiste/seines Kofferraums verschob sonst einen Laptop ungemerkt -> gefaelschtes q_lapscan = Rueckgabe-Dupe). Adressen der Gast-Komponenten merkt I.Ledger je Lauf (je Gast eine, 30 s ohne Lauf = verworfen). Herausnehmen aus Kiste/Kauf (From = Kiste/Haendler) bleibt ungemerkt. 0 = nur From = aufrufende Komponente (alter Weg)
+#   inv_trunk_keep=1 Host: pend-Anfrage eines Gasts, deren UID in einem Kofferraum <= 1000 uu um seine Server-Figur liegt (echtes Server-Item, z. B. im ~1-RTT-Fenster nach der Kofferraum-Sperre car_lock/car_denyui aus dem gesperrten Kofferraum gezogen - die DLL verwirft das RPC still), wird mit "keep|srv" beantwortet statt per Budget/Ernte gutgeschrieben (sonst behaelt der Kofferraum das Original = Dupe). Autoliste aus Coop.Car.Vehicles, je Gast hoechstens 1x/s gelesen, hoechstens 4 nahe Autos. Log "liegt in einem Kofferraum beim Server". Fehler -> nur diese Pruefung aus (inv_pend bleibt). 0 = keine Kofferraum-Pruefung (alter Weg)
+#   inv_craft_fresh=1 Host (mit inv_craft_guard): Crafting-Schutz wertet Zutaten aus Stapeln, die seit dem letzten Ledger-Lauf (bis 0,5 s) entstanden sind (pend/Defer/give per AddFor, Ergebnis eines frueheren Crafts im selben Lauf), nicht als fehlend: noch vorhandener frischer Stapel = gedeckt, ganz verbrauchter wird mit der ungesehenen AddFor-Menge (H.Own) bzw. dem Ergebnis gedeckter Crafts verrechnet. Log "frischer Stapel seit letztem Ledger-Lauf". Grenze: Relay-Ertrag (ls_combat) oder Kisten-Stapel, der im selben Fenster ganz verbraucht wird, bleibt ungedeckt. 0 = alter Weg
+#   inv_scan_backoff=1 Gast: Leerlauf-Bremse fuer die FindAllOf-Suchen im 1-s-Takt inv_cli1. Waffenlicht-Suche (inv_battery_drain / inv_light_local_off): nach einer vollen Runde ueber alle 4 Lampen-Klassen ohne Lampen-Objekt 5 s Pause, dann wieder volle Runde. Stations-Geister (inv_station_ghost): nur mit Host-Cap inv2b (sonst repliziert der Host keine Stationen), 2-s-Takt nur solange eine lokale Laufzeit-Kopie auf ihre Host-Kopie wartet, sonst alle 10 s. 0 = jede Sekunde bzw. alle 2 s wie Review 1
+# Lebenswerte (ls_vit)
+#   skill_mult=1     Faehigkeiten: Wirkungs-Multiplikatoren (Fitness/Staerke/Zaehigkeit/... *Multiplier) und Zeitschrift-Merker (*MultiplierUsed?) speichern und an den Gast spiegeln; alte Werte-Dateien ohne Multiplikatoren rechnen sie beim Beitritt aus den Stufen nach (sonst wirken Skills nach jedem Wiederbeitritt nicht mehr)
+#   vit_med_persist=1 Blutung, starke Blutung, Bruch und Infektion (mit Restzeit) sowie Ausdauer und Sauerstoff in der Werte-Datei; beim Beitritt wie im Spiel wieder gesetzt (Ausloggen heilt nicht mehr)
+#   stats_persist=1  Kills, ueberlebte Tage, Laufstrecke und zerstoerte Befaelle in der Werte-Datei (beginnen nicht mehr bei jedem Beitritt bei 0); nur gespeichert, nicht im vit-Spiegel
+#   werte_atomic=1   Werte-Datei (<Id>.werte.txt) atomar schreiben (.tmp + Umbenennen); leere/kaputte Datei beim Laden aus .bak bzw. der Journal-Kopie .werte.commit reparieren; kaputt ohne Ersatz: nicht anwenden, Kopie <Id>.werte.broken, in dieser Sitzung nicht ueberschreiben
+#   vit_rm_check=1   Vom Gast gemeldete Heilung (Blutung/Bruch/Infektion/Eindaemmen): 0 = ungeprueft, 1 = ohne abgelaufene Spielzeit oder verbrauchtes Heilmittel nur melden (secwarn vit_rm_cure), 2 = ab der 2. solchen Heilung in 10 min ablehnen (die erste gilt). Verbrauch bei offener Kiste/Haendler zaehlt mit vit_rm_open + inv_cons_open
+#   vit_rm_open=1    vit_rm_check: Heilmittel-Verbrauch bei offener Kiste/Haendler als Nachweis zaehlen (Einzel-Abnahme, ls_inv LastConsume mit AllowOpen, braucht inv_cons_open). Abwaegung: genau 1 Heilmittel in die offene Kiste verschieben zaehlt dann auch (Stufe 1 meldet nur). 0 = nur Verbrauch ohne offene Kiste (alte Fehlmeldung moeglich)
+#   vit_regen_check=1 Regeneration des Gasts erst 3 s nach dem letzten Schaden annehmen und auf die Spielrate kappen (0,8 x Difficulty.RegenMultiplier je s, doppelter Spielraum); vit_regen_max bleibt die Obergrenze
+#   vit_stale_clear=1 Ohne lebende Figur (tot, Respawn) keine alten Lebenswerte stehen lassen: kein Leben-Flackern und Rotblitz nach dem Respawn
+#   vit_infect_local=1 Infektion, die nur beim Gast gesetzt ist (Phantom-Biss der lokalen Zombie-Kopie, Host ohne Infektion), nach 3 s lokal beenden wie die anderen Effekte, ohne "Infection cured"-Meldung (AI-1); nur mit Host-Cap vitinf (Host mit vit_infect an), sonst bleibt die replizierte Infektion unangetastet
+# Spieler (ls_player; death_xp in main.lua)
+#   death_xp=1       Tod eines Gasts: Stufen-Abzug (XPDeath) auch auf der Host-Kopie, wie das Spiel es beim Gast macht (sonst springt die Stufe zurueck)
+#   unstuck_safe=1   /unstuck sicher: Boden-Linie ab Kapselmitte +60 uu (Treffer ueber der Kapselmitte zaehlt nicht, nie ins Stockwerk darueber), nur wer wirklich feststeckt (< 50 uu in 5 s oder > 3 s im Fall, sonst "erst 5 s stillstehen"), Ziel in fremdem Claim abgelehnt, Bewegungspruefung 5 s ausgesetzt (TrustSkip)
+#   player_tp=1      Teleport des Servers (Admin tp/goto/bring, U-Bahn, /unstuck) per pl_tp an der eigenen Figur des Gasts nachziehen (K2_TeleportTo) statt ClientSetLocation mit Lua-Strukturen; beide Seiten (Cap pl_tp), ohne: nur der Server versetzt (unter trust_movement zieht der Gast die Figur dann zurueck)
+#   respawn_hudfast=1 Gast: HUD/Inventar nach einem Respawn ohne eigenen Klick (neue Figur kam vor der Entscheidung) sofort wie beim Beitritt statt nach 5-8 s
+# Clans (ls_clan)
+#   clan_disband=1   /clan disband <Clanname>: der Leiter loest den Clan auf (Bestaetigung mit dem Namen; jeder behaelt seine Bauten)
+# KI und Tiere (ls_ai)
+#   ai_notrace=1     AI-1: Gast-Kopien von Zombie/Boss ignorieren Spielerfiguren in ihren Angriffs-Traces (ClassesToIgnore += BP_PlayerCharacter_C); Baer/Wolf AttackTrace per Patch ai_nt_bear/ai_nt_wolf (ret_early) - kein Phantom-Biss, keine lokale Blutung/Infektion; echte Treffer kommen vom Host
+#   ai_locktarget=1  AI-2: nur dedizierter Server ohne N6 (ai_nearest=1): Wellen-KI von Beacon/Befall, die zur Lage des Geists laeuft, in den ersten 15 s auf die Lage des naechsten Gasts umlenken (Lua-Rueckfall; mit N6 loest die DLL das selbst)
+#   ai_horde2=1      AI-3: tote Gast-Figur ueber den gemerkten Pfad wiederfinden (der Tod ruft UnPossess) -> Horden in der Naehe enden wie im SP beim Tod des Gasts. Listen-Host: der lebende lokale Spieler zaehlt als anderer lebender Spieler - Gast-Tod beendet keine Horde neben dem Host
+#   ai_ghost_days=1  AI-5: dedizierter Server, alle 10 s: Tage des Geists (Spieler 0) = Median der Gaeste; Zombie-/Tier-Schaden und -Leben skalieren dann mit den Spielern statt mit der Laufzeit des Servers (nur DaysSurvived, nie Stufe/XP)
+#   ai_aio_near=1    AI-6: Gast: lebende KI-Kopien in den Nahzustand des AI-Optimizers setzen (Features 95, Mesh/Bewegung jeden Frame, sichtbar): Nahzustand <= 60 m, Ruecknahme auf Stufe 2 ab 90 m (ai_aio_far); sonst bleiben sie im Fern-Zustand der Relevanzgrenze eingefroren. Testbefehl ai_aiocheck
+#   ai_wake_fast=1   AI-7: Server: Zombies/Bosse/Tiere beim ersten Nah-Kontakt (<= 50 m) sofort wecken (Animation + Mesh-TickInterval 0), nicht erst bis zu 1 s spaeter; Fernkampf-Wecken hebt auch den TickInterval auf
+#   ai_hitdiag=1     AI-7: Server: DLL zaehlt Zombie-Angriffe (AttackPlayer) und -Treffer (Event_OnHit) ohne Lua-Hook (Watches ai_atk/ai_hit), Log "KI-Treffer" einmal je Minute mit Gaesten
+#   ai_markers=1     AI-9: Gast: markierte Gegner verlieren die Markierung 60 s nach dem letzten Sichtkontakt (wie im SP; auf Kopien lief der Ablauf nie)
+#   ai_bossrock=1    AI-11: Server: repliziert die Boss-Steinklasse nicht von sich aus, werden geworfene Steine waehrend der Wurf-Montage fuer Gaeste repliziert (sichtbar)
+#   ai_perf=1        AI-8/CORE-31: Leistung: Adress-Cache fuer Familie/Name (Server 5-Hz-Durchlauf, Gast-Kandidaten), Waechter ueber den Kandidaten-Pool, Nester/Geschuetze ueber Pfadliste (Scan 30 s/5 s statt jede Sekunde), UDS/EventManager ueber gemerkten Pfad; 0 = alte Wege
+#   ai_aio_far=1     AI-6b: Gast: KI-Kopien im Nahzustand (ai_aio_near) ab 90 m zurueck auf die lebende Stufe 2 des AI-Optimizers (Features 31, Mesh/Bewegung 0.05-0.1 s, Sichtbarkeit unveraendert); bei erneuter Annaeherung <= 60 m wieder Nahzustand. 0 = Nahzustand bleibt bis zur Relevanzgrenze (alt)
+# Kampf (ls_combat; alle brauchen combat_v2=1)
+#   combat_hand_v2=1 Waffe in der Hand nach Spiel-Sicht (RepActorsData[ActiveWeapon]) statt Hand-Socket "*_r" (UE 5.6); daran haengen Munitionsanzeige, Hitmarker, Einschlaege, Falloff, Abnutzung; loggt den Socket einmal je Waffe
+#   combat_fire_trace=1 Schuss-Kette ueber die DLL (nur zaehlen): Gast Klick/Ziehen/Slot-RPC/Abzug/Schuss-/Effekt-/Treffer-RPC, Host Slot-Wechsel/Effekt-Multicast/Treffer-RPC/Schaden je Gast; Zeile alle 10 s bei Aenderung, aus nach 30 Zeilen oder 20 min (braucht combat_fire_diag=1)
+#   combat_fire_diag_note=0 1 = Lua-Hook auf CreateNotificationUI zaehlt "No ammo", "No mag in firearm", "Weapon jammed", "Weapon muzzle blocked", "You need to ADS to fire" (nur fuer einen Testlauf; ~290 Aufrufstellen)
+#   combat_fire_slotfix=1 Schuss-Sperre-Reparatur (Gast, 2 Hz): aktive Schusswaffe ohne bzw. mit wartendem Gegenstand im Waffen-Slot des Inventar-Widgets -> Wartestatus nach 8 s loesen bzw. nach 3 s Slot-Reparatur ueber ls_inv (RepairSlot) und Hinweis
+#   combat_owner_hitq=1 Treffer-Hook Baum/Muell (Host) merkt nur Pfade, der Owner (Ertrag an den Schlaeger) wird im 0,1-s-Task gesetzt - keine UFunctions im Hook; 0 = alter Weg im Hook
+#   combat_raidboom=1 Host: Explosion eines Gast-Wurfkoerpers/Geschosses (Rohrbombe, Granate, Rakete, Frag) an ls_build melden (Raid-Schaden an Bauteilen, braucht raid_boom)
+#   combat_raidswing=1 Gast: jeder eigene Nahkampf-Schlag geht an ls_build (Raid-Nahkampf an Bauteilen, braucht raid_melee)
+#   combat_sd_native=1 Host: DLL schreibt ShotDistance beim Eintritt von SERVER_DamageEvent (echter Treffer-Abstand -> Schadens-Falloff wie im Einzelspieler); der Blick-Trace (combat_falloff) bleibt Rueckfall, bis die DLL einen Abstand geschrieben hat
+#   combat_hit_server=1 Server-Hitmarker: der Host meldet echte Treffer (SERVER_DamageEvent) ueber ls_ui an den Schuetzen (Kopftreffer rot); der Gast schaetzt dann nicht mehr selbst
+#   combat_hitcheck=1 Treffer-Pruefung fuer SERVER_DamageEvent je Gast (<= 20 Treffer/s, Treffer <= Schuesse x 12 + 2 je 2 s, Einschlag <= 200 m von der Figur und <= 5 m vom Ziel): nur Log und secwarn
+#   combat_hitcheck_deny=0 1 = nach 5 Verstoessen in 10 s SERVER_DamageEvent dieser Waffe 60 s sperren (DLL-Sperrliste, hoechstens 16 Waffen); erst nach einem sauberen Live-Test einschalten
+#   combat_dur_v2=1  Abnutzung der Gast-Schusswaffen beim Host (PlayerActiveWeapon der Host-Kopie, Muendungs-Abnutzung) und echte Haltbarkeit (Schusswaffe|Nahkampf) per cb_dur an den Gast
+#   combat_dur_gate=0 1 = Haltbarkeit <= 0 laut Host: Abzug der Schusswaffe beim Gast gesperrt ("Weapon jammed"), Nahkampf-Relay-Treffer abgelehnt ("Item durability too low"); 0 = nur Log "wuerde sperren". cb_dur traegt den Slot-Tag des Hosts: gesperrt wird nur bei gleichem aktivem Slot, jede andere gesperrte Waffe wird sofort freigegeben
+#   combat_objdmg=1  Gast-Kugeln auf Nicht-Fleisch-Ziele (Geschuetze, Befall, Labor-Schaltkasten, Zielscheiben, Muell, Atombombe): DLL unterdrueckt den lokalen Damage_Object-Aufruf, der Host trifft (cb_od); aktiv erst mit bestaetigter Unterdrueckung (netcore_watchinfo.txt). Faehigkeit cbod (beide Seiten mit combat_objdmg): der Gast unterdrueckt Damage_Object nur, solange der Host cbod hat (Host-Schalter aus/Ausfall -> Treffer wieder lokal); abgemeldet, sobald man kein Gast mehr ist bzw. combat_v2=0
+#   combat_od_batch=1 Gast: Objektschaden-Treffer (cb_od) je Ziel und 0,2 s zusammenfassen, eine Meldung mit Trefferzahl (Schrotkugeln/hohe Kadenz gehen nicht mehr am 15/s-Limit verloren; nicht gesendete Summen bis 1,5 s als Uebertrag); nur mit Host-Faehigkeit cbodn (beide Seiten combat_objdmg+combat_od_batch), sonst einzeln wie bisher. Host: Treffer-Budget 60/s je Gast, Kappung 500 je Treffer
+#   combat_bolt=1    Armbrust-Bolzen fuer Gaeste wiederverwendbar: Gast meldet die Lage seines lokalen Bolzens (Pfeil-Hook, nur nach eigenem Schuss), der Host legt ihn wie im Einzelspieler ab (600 s, fuer alle sichtbar und aufhebbar); je Schuss hoechstens ein Bolzen (Schusszaehler des Hosts)
+#   combat_hold_fix=1 Gast: HoldingFirearm?-Wettlauf beim Ziehen (hoher Ping) reparieren - aktive Schusswaffe gilt nach 1 s wieder als gehalten (Zielen, Armbrust/Werfer schiessen); setzt das Spiel es sofort zurueck: 60 s Pause
+#   combat_mrelay_los_r=1 Nahkampf-Relay: Sichtlinien-Toleranz = Kapselradius des Ziels + 30 (mind. 80) - grosse Tiere (Baer, Hirsch) gelten nicht mehr als "keine Sicht"
+#   combat_killfeed=1 Kill-Feed: Spieler-Kills (Name, Waffe, Kopftreffer, Meter) als Hinweis bei allen Gaesten (cb_kf), Zeile auch im Server-Log
+#   combat_killfeed_pve=0 1 = auch Tode durch Zombies, Tiere, Menschen, Geschuetze und Umwelt im Kill-Feed
+#   combat_multihit_restore=1 Gast: Merker-Datei ls_multihit.txt, solange der Mod Difficulty.MultiHit angeschaltet hat; nach einem Absturz setzt der naechste Start (ohne Host) bzw. das naechste Trennen den Wert zurueck
+#   combat_ff_note=1 Clan-Schutz: Treffer auf ein Clan-Mitglied -> Hinweis "Clan-Mitglied - kein Schaden" an den Schuetzen (hoechstens alle 5 s); verworfene Treffer zaehlen nicht mehr als letzter Treffer/Kill
+#   combat_own_cache=1 Host: Owner-Trick findet Baeume/Muell/Schrott ueber gemerkte Lagen (Baeume alle 5 s, Muell/Schrott alle 30 s neu) statt FindAllOf + Lage jede halbe Sekunde; 0 = alter Scan
+#   combat_kf_defer=1 Host: Spielertod erst aufloesen, wenn der toedliche Treffer aus der DLL gelesen ist (ein cb_pvp-Takt, 0,5 s); der erste Treffer danach wird eingefroren, spaetere Treffer auf die Leiche aendern Kill-Feed und PvP-Kill-Credit nicht; 0 = sofort wie bisher
+#   combat_dead_pawn=1 Host: Kill-Feed/PvP-Kill: tote Gastfigur ueber den gemerkten Pfad finden (der Tod ruft im selben Aufruf UnPossess, K2_GetPawn ist sofort leer); 0 = alter Weg (Gast-Tode werden nicht erkannt)
+# Bauen, Bau-Anspruch, Schloesser, Raids (ls_build)
+#   build_dislocal=1 Zerlegen (Host): Werkbank-Item ueber HandleLocalRequestConsumeItem verbrauchen statt RPC SERVER_RequestConsumeItem mit Lua-Struct (Absturzgefahr). Fehler -> build_disasm (Zerlegen aus, Gast nimmt SP-Weg); 0 = alter RPC-Weg (nicht empfohlen)
+#   build_spawncap=1 Svr_SpawnBuild-Flut: hoechstens 6 Spawns je Gast und 100-ms-Takt pruefen/verbrauchen, Rest ohne Verbrauch entfernen; Ueberlauf der Hook-Warteschlange -> Baumodus beim Host beenden, secwarn b_spawnflood, ungepruefte neue Bauten der Klasse im Flut-Gebiet abraeumen
+#   locks_hookfirst=1 Interaktions-Hook: volle Warteschlange (> 40 je 100 ms) ueberspringt nie die Schloss-/Claim-Pruefung (nur Einreihen/Owner-Trick); Owner-Trick ohne UFunction ausser SetOwner (Figur = Outer der Komponente, Stationshalten aus Index und 0,5-s-Positionen)
+#   build_idxfull=1  Host: Bau-Index nach Weltstart ohne Budget (alle 5 s, auch ohne Gaeste, bis die Zahl 3x gleich bleibt); bis dahin ist Interaktion mit noch nicht indizierten Bauten einer Besitz-Klasse gesperrt ("Bauteile werden noch geladen")
+#   build_bunker=1   UE 5.6 Bunker (Scanner + Bunkertueren): Scanner laeuft nur beim Host (Karte aus dem Server-Inventar, Allzugangskarte frei + XP Stufe*200 beim ersten Entsperren), Zustand an alle inkl. Spaetjoiner (b_st bs / d); kein "No Keycard Available" bei Zuschauern
+#   raid_boom=1      Raids: Explosion eines Gast-Wurfkoerpers (Rohrbombe/Splitter/Granate/Rakete, gemeldet von ls_combat combat_raidboom) trifft fremde Bauteile im Radius (hoechstens 24); braucht raid_on und pvp
+#   raid_boom_pad=150 uu Zuschlag auf den Explosionsradius (Abstand Pivot <-> Flaeche grosser Bauteile)
+#   raid_boom_dmg=150 Schaden je Explosion, wenn ls_combat keinen Wert liefert (wird wie gemeldete Werte mit raid_mult_explosive multipliziert)
+#   raid_melee=1     Raids: Nahkampfschlag eines Gasts auf ein fremdes Bauteil (Meldung b_rmel; Host prueft Reichweite 450 uu, Nahkampfwaffe in der Hand, Blickrichtung); braucht raid_on und pvp
+#   raid_melee_dmg=30 Schaden je Nahkampftreffer an Bauteilen (Power-Schlag doppelt); raid_mult_melee gilt hier nicht (nur ApplyDamage-Treffer)
+#   claim_reconcile=1 owners.txt einmal je Welt gegen die Bauten abgleichen (120 s nach vollstaendigem Index, braucht build_idxfull): Eintraege ohne Bau am Ort fallen weg; fehlen mehr als max(10, 30 %), nur Log
+#   build_beacondeath=1 Horde-Beacon: Tod oder Trennung des Gasts, der die Horde gestartet hat, beendet sie wie im SP (Beacon liegt wieder als Gegenstand da); ungestartete Beacons bleiben stehen
+#   claim_ownpick=1  Fremde Bauteile (Besitzer nicht im Clan) auch ausserhalb von Claims nicht aufheben/ersetzen (Optionen je Klasse aus OnServerExecuteInteract; Interaktions-Hook leert den Actor, Hinweis "Nicht dein Bauteil"); reine Bauteile (Wand, Fundament ...) bekommen fuer Fremde keinen Owner-Trick mehr. Herrenlose Bauteile bleiben frei; braucht claim_on
+#   build_replflush=1 Ersetzen (Verschieben) eines Baus: SetReplicateMovement + FlushNetDormancy + ForceNetUpdate, damit andere Gaeste die neue Lage sofort sehen (Diagnose bReplicateMovement/NetDormancy einmal im Log)
+#   claim_max=3      Hoechstzahl Claims (Basis-Marker) je Clan bzw. Spieler ohne Clan, nur fuer neue Claims (0 = unbegrenzt); weitere Marker stehen, beanspruchen aber nichts ("Claim-Grenze erreicht"), /claim ebenso; gilt auch fuer Marker-Umzug (Neusetzen < 40 uu, Nachfolger-Uebergabe) - ueber der Grenze (claim_max gesenkt oder Platz inzwischen belegt) geht der umgezogene Claim verloren
+#   claim_hidemarker=1 Nur PvP (pvp=1): Basis-Marker fremder Spieler (Besitzer nicht im Clan) erscheinen nicht auf Karte/Kompass der Gaeste (b_mk je Gast); eigene, Clan- und herrenlose Marker bleiben sichtbar; Clan-Beitritt zeigt sie wieder
+#   claim_preview=1  Bau-Vorschau beim Gast im fremden Claim rot + Hinweis "Fremdes Gebiet" (Claim-Kreise je Gast b_clm); der Host lehnt den Bau dort weiterhin ab (Item bleibt)
+#   raid_lootplace=1 Raid: Inhalt einer zerstoerten Kiste/Station landet an der Kiste statt vor den Fuessen des Angreifers (neue Bodenobjekte <= 1,5 s, <= 4 m um ihn, werden an die Kiste gelegt)
+#   locks_rpcplus=1  Schloss/Claim-Sperrliste: zusaetzlich SERVER_RequestConsumeItem (Kisten und Stationen) und Herstellen an Stationen (SERVER_RequestCraftItem/-Drop); Stationen mit Inventar (Muelleimer, Werkbaenke, Lagerfeuer, Bau-Werkbank) zaehlen wie Kisten (DLL-Gruppe, /lock moeglich, Inhalt faellt beim Raid). Kostet 1 bzw. 3 Zeilen mehr je gesperrter Kiste/Station
+#   build_display=1  Vitrine: ausgestelltes Item fuer alle Gaeste und Spaetjoiner sichtbar (b_st "v" mit DataAsset-Pfad, Gast baut das Mesh lokal wie DisplayItem; ohne Waffen-Anbauteile). Fordert nie Kisten-Daten an
+#   build_radiosync=1 Radio/Jukebox: an/aus und Titel des Spielers mit offenem Radio-Fenster gehen an alle Gaeste in 100 m (b_radio -> b_rd, Spaetjoiner inklusive); gleicher Titel nur, wenn die Datei bei ihnen in <Spiel>\Radio liegt; Ausschalten ohne StopRadio (oeffnete sonst das Radio-Fenster)
+#   build_radio_any=1 Radio-Titel fehlt beim Gast: eigenen Zufallstitel spielen (0 = still bleiben)
+#   build_perf=1     Bau-Leistung: HP-Liste nur bei Index-Aenderung neu sortiert, Zustaende (b_st), die sich 30 s nicht geaendert haben, nur jede 2. Sekunde gelesen, Deckenlichter/Wandlicht (nur Strom) ohne b_st, IsA je Klasse gemerkt; Gast scannt Bauten nur alle 6 s (waechst der Index noch: alle 2 s) und loest neue Bauten in 50 m bei Bedarf auf
+#   build_polish=1   Bau-Feinschliff: Bau-Ton beim Gast, Generator-Reichweite (Option 3) beim Gast, Kisten-Zahl im Interaktions-Fenster (b_st n 3. Feld, Cap bcnt), Ja/Nein "Kiste aufheben" nur nach echtem Klick auf Ja (Knopf-Hook, sonst 2 Hover-Proben), unsichtbare Ja/Nein-Abfrage beim Host schliessen, Max-HP der Bauteile aus dem Klassen-Standard (beschaedigte Bauten nach Neustart zeigen Schaden)
+#   build_nobuild=0  Bauverbotszonen des Spiels (BP_NoBuildArea_C) beim Host pruefen: 0 = nur Log "wuerde abgelehnt", 1 = Bau ablehnen (Item bleibt); Zonen um 1 m verkleinert, Items mit BuildAllowBuildingInNoBuildZones ausgenommen
+#   build_block_m=0  Mindestabstand in Metern zu Bauteilen eines nicht verbuendeten Besitzers ausserhalb von Claims (0 = aus); Kommawerte erlaubt (z. B. 2.5); Fehler der Abstandspruefung schalten nur build_block_m ab, nicht build_nobuild
+#   build_prune=1    Host: Tabellen je Verbindung/Objekt alle 60 s und beim Verlassen aufraeumen (abgelaufene /code-Freigaben, Fehlversuche, Stationsfenster, Werkbank-Tabellen, Raid-Merker, Einmal-Logs) - fuer Dauer-Server ohne Weltwechsel
+#   locks_denyfair=1 DLL-Sperrliste (200 Zeilen): Budget nur auf Gaeste mit gesperrten Objekten in Reichweite verteilen, kleinster Bedarf zuerst, ungenutzte Zeilen gehen an die naechsten Gaeste (Raider an einer Basis bekommt alle Kisten-RPC-Sperren); 0 = fester Anteil DENY_LINES/Gaeste wie bisher
+# Fahrzeuge (ls_car; alle brauchen car_v2=1)
+#   car_cleanup=1    CAR-3: Gast stirbt im Auto/steigt aus: Motorton, Timer VehicleSound/CheckWater/Event_Noise, Tankverbrauch, Fahrzeug-HUD und offenes Radio-Menue lokal aufraeumen (Wrapper Coop.Car.Stop)
+#   car_ghost=1      CAR-2: Gast: lokale Geisterautos verhindern (Fahrzeug-Spawner mit lokaler Authority gesperrt, entstandene Geister nach 5 s entfernt; car_diag zeigt Zaehler)
+#   car_tags=1       CAR-4: Host setzt an Gastautos die Insassen-Tags wie beim Einsteigen im SP (Tiere fliehen, Banditen/Militaer reagieren, Landminen ignorieren das Auto)
+#   car_water=1      CAR-5: Host prueft Wasserschaden (CheckWater alle 0,5 s) fuer Autos, die ein Gast faehrt
+#   car_fuelhold=1   CAR-6: tankt ein anderer Gast ein gefahrenes Auto, haelt der Host den getankten Wert 3 s gegen den aelteren Fahrerstand
+#   car_strict=1     CAR-7: Einsteigen nur mit Host-Auto (Host-Schluessel im start, Antwort carnone -> Gast steigt aus statt unsichtbar zu fahren); main.lua + ls_car. Cap carnone = car_strict beim Gast: der Host schickt carnone/prueft "far" nur an Gaeste mit carnone, sonst nur Hinweis (none) bzw. carbusy + Hinweis (locked)
+#   car_lock=1       CAR-8: Fahrzeug-Besitz (Kaeufer oder wer am Steuer abschliesst) und Schloss je Auto per /carlock (Clan darf mit). Abgeschlossen: Fahren, Tanken/Reparieren, Schieben/Abschleppen und Kofferraum (DLL-Sperre, hoechstens 24 Zeilen) nur Besitzer/Clan. Datei car_owners.txt nur auf dem dedizierten Server (Srv.Save); ohne /carlock alles wie im SP. Die Sperre beim Einsteigen gilt fuer jeden Gast (Host-Schalter car_v2 + car_lock), auch ohne car2
+#   car_lockplus=1   CAR-8: Kofferraum-Sperre auch fuer SERVER_RequestConsumeItem (Kontextmenue/Verbrauch per UID) wie locks_rpcplus; 1 Zeile je Paar nach den 4 wichtigen, Budget bleibt 24
+#   car_denyui=1     CAR-8: wird ein Kofferraum fuer einen Gast gesperrt (Schloss oder erste DLL-Zeile), schliesst der Gast ein offenes Kofferraumfenster und gleicht ab (wie locks_denyui); Faehigkeit cardn, Nachricht car_dn
+#   car_occdmg=1     CAR-10: Tod am Steuer schaltet Motor/Gas aus (SP AfterDeath); Wrack mit 0 HP gibt Treffer an die Gast-Insassen weiter wie SP (braucht die ApplyDamage-Beobachtung cb_dmg/own_dmg der DLL)
+#   car_seatanim=1   CAR-11: Sitzpose (Chr_SitInCar_Montage) anderer Spieler im Auto auch fuer spaete Joiner und nach verlorenem Paket
+#   car_sweep2=1     CAR-13: Roadkill-Pruefung entlang der gefahrenen Strecke (Radius 250) und nur vor dem Auto; 0 = alter Kreis 330 um die Mitte
+#   car_perf=1       CAR-14/18, CORE-30: gemeinsame Autoliste, ohne Gaeste kein car_s/Fahrlaerm, Coop.Car.HostTick frueh zurueck wenn alle Gaeste car_s haben, offene car_s nach Abstand (> 25000 warten), Fehler je Auto statt car_fx fuer alle, Tabellen je Gast/Auto aufraeumen
+#   car_guard=1      CAR-16: Host prueft pose/seat/stop (Lage-Sprung loggen, erst ab 5 in 10 s 10 s verwerfen; Sitz-Versatz begrenzen; Ausstiegspunkt <= 1500 uu) und Abschleppen nur mit CanThisTowVehicles?
+#   car_trunkn=1     CAR-17: Kofferraum-Anzahl vom Host (Keyed car_n, Cap carn); Gast sieht "Storage: N Items" statt immer 0, mit car_lock auch "abgeschlossen (Besitzer)"
+#   car_polish=1     CAR-9/20/21: Fahrzeug-HUD (VehicleUI) folgt Host-Schaden/Reparatur, Hinweis "Unterbrochen - erneut halten" wenn ein Mitspieler das Halten abbricht, Radio der Zuschauer startet beim Liedwechsel nicht neu, Fahrzeughaendler = naechster Spawner zum Gast
+# Welt und Quests (ls_world), Weltobjekte (ls_wobj)
+#   quest_laptopscan=1 WORLD-1: Military-Intel-Laptop "Scan" beim Gast: lokales CallRandomEvent per DLL aus (ls_world_lap), Gast meldet q_lapscan (Cap qls1), Host startet die Laptop-Quest nach Abnahme-Nachweis (ls_inv Ledger, mit inv_cons_open auch bei offener Kiste/Haendler); alle erledigt -> Laptop zurueck ins Inventar (quest_lap_proven; Abnahme bei offener Kiste/Haendler: keine Rueckgabe)
+#   world_spawncrate=1 WORLD-2: Keycard-Koffer, Verstecke und Spezialkisten der Zufalls-Spawner repliziert der Host (W.REP); Gast entfernt eigene Kopien und unterdrueckt seine Spawner (DLL ls_world_lay), sobald der Host die Kiste meldet
+#   world_layout_nospawn=1 WORLD-4: Gast unterdrueckt eigene Prefab-/Camp-Spawner (BP_PrefabSpawner BeginPlay, SpawnSettlement, AlternatePOI SpawnPrefab; DLL ls_world_lay), solange der Host PrefabMaster repliziert; W.LayoutClient bleibt Rueckfall
+#   world_prefabmark=1 WORLD-4: Fundort-/Ereignis-Marker kommen vom Host (w_pfm, Cap wpfm nur mit Host-world_prefabmark=1 und laufendem Spawner-Scanner); Gast entfernt seine lokalen (falschen) Marker und blendet entdeckte aus. Host 0 = Gaeste behalten ihre eigenen Marker (voller Rueckweg braucht beim Gast zusaetzlich world_layout_nospawn=0, sonst spawnt der Gast keine eigenen)
+#   world_prefabxp=1 WORLD-5: Fund-XP fuer Camps/Ereignisse (SP DistanceToPrefab: Stufe*40-60*Multiplikator) bucht der Host je GuestId und Spawner einmal (.world.txt pfx), meldet w_pfd
+#   world_xp_fishsvr=1 INV-10/WORLD-6: Svr_CatchFish eines Gasts ohne AddXP_Fishing am Host nach 1,5 s als Fang buchen (Angel-XP 4-6)
+#   world_fish_nohostsim=1 INV-10/WORLD-6: dedizierter Host simuliert MC_CastRod/MC_StopFishing nicht mit (DLL ls_world_fish): keine falschen Toasts, kein Host-Fisch; mit world_xp_fishsvr = Fisch-Nachweis fuer ls_inv (A.Coop.World.FishProof)
+#   world_look=1     WORLD-13: Barbier-Aussehen am Server speichern (w_look, .world.txt look; neuestes je Gast, Plattenschreiben hoechstens 1x je 10 s, nichts wird verworfen) und beim Beitritt/Respawn zurueckgeben (w_lookset, Cap wlook)
+#   world_xp_addhook=0 CORE-18: alter Gast-Hook auf LevellingComponent.AddXP (Schadens-/Tod-Kette, Regel 3); 0 = Crafting/Buch-XP direkt melden, der Host prueft und rechnet selbst
+#   quest_loadcheck=1 CORE-29: Quest-Laden pruefen (Fehler oder 0 Quests trotz gemerkter Anzahl qn): 3 Versuche, dann _q.sav als .bad<Zeit> sichern statt ueberschreiben
+#   quest_save_atomic=1 CORE-29: Quest-Saves erst in Slot <Id>_q_tmp, dann _q.sav -> _q.sav.bak und _q_tmp -> _q.sav; fehlt _q.sav beim Laden, gilt .bak (Rueckfall bei Fehlern: direkt in den Slot)
+#   world_note_remote=1 WORLD-7: Gast unterdrueckt Toasts (CreateNotificationUI) nur aus Kontexten FREMDER Spielerfiguren (Angel-Multicast u. a.; DLL ls_world_note at=call remote=1); wirkt nur mit DLL-Status feat_remote=1
+#   world_respawn_safe=1 WORLD-8: Baeume/Steine wachsen nicht nach, wenn ein Spieler (<= 3 m), ein Bauteil (<= 4 m) oder ein Claim dort ist; erneut pruefen alle 5 min
+#   world_poi_mark=1 WORLD-9: Gast zieht die Karten-Marker vom Host bestaetigter POIs nach (ActorLoaded: erkundet-Anzeige, Tooltips)
+#   world_skymod=1   WORLD-10: Himmel-Zonen (BP_EnterSkyModifer): dedizierter Host fuehrt Event_Enter/Exit nicht aus (DLL ls_world_sky) und nimmt Zonen-Modifier vom Host-Himmel (sonst dunkel fuer alle); Gast setzt seinen Zonen-Modifier lokal (wieder); Diagnosezeile "Himmel-Zone ..."
+#   world_dogpet=1   WORLD-14: Hund streicheln fuer andere sichtbar (w_pet -> Host prueft -> w_petfx, Cap wpet; nur Animationen)
+#   wobj_relabel=1   WORLD-16 (ls_wobj): nach einer Umschaltung durch den Host die Interaktions-Beschriftung ("Turn On/Off") des gerade angeschauten Objekts erneuern
+#   world_resp_hostcfg=1 WORLD-17: Gaeste nutzen die Nachwachs-Minuten des Hosts (w_cfg resp) statt ihres eigenen world_respawn_min
+#   world_harv_meshbatch=1 WORLD-18: Mesh-Reparatur gefaellter Baeume/Steine beim Gast mit einer Suche je Durchlauf statt 2x FindAllOf je Schluessel (Ruckler beim Beitritt)
+#   world_layout_killmemo=1 WORLD-19: Gast merkt sich schon entfernte lokale Layout-Kopien (bis zur GC) - kein erneutes Entfernen, kein Log-Spam
+#   world_harv_mat=1 WORLD-20: gefaellte Baeume beim Gast mit dem Material der Foliage (Material nicht repliziert)
+#   world_harvq_guard=1 WORLD-22: w_harvq (Gast meldet gefaellte Foliage) nur ohne bewiesenes Nahkampf-Relay und hoechstens 2/s, 60/min je Gast (secwarn)
+#   world_scrap_addnew=1 WORLD-23: Schrott-Rueckfallweg (world_scrap_add oder ohne inv_pend) per AddNewItemSomewhere ins Gast-Inventar statt vor die Fuesse
+#   world_poi_tip=1  WORLD-26: POI-Tooltips (besiegte Bosse, "1/1 Special Container Looted") vom Host an die Gaeste (w_poist, Cap wpoi2)
+#   world_sleep_pct=100 WORLD-27: Prozent der Gaeste, die schlafen muessen, damit die Nacht uebersprungen wird (100 = alle, wie bisher)
+#   world_lapscan_queue=1 Host: Laptop-Scans je Gast einreihen (hoechstens 3 offen, 20 gesamt) statt 5-s-Drop (der Server hat den Laptop schon verbraucht, ContextScanLaptop @00ee); 5-s-Drossel nur noch fuer Scans ohne Ledger-Nachweis. 0 = alter Weg (zweiter Scan binnen 5 s verworfen)
+#   quest_lap_proven=1 Host: Laptop-Rueckgabe (alle Laptop-Quests erledigt) mit Ledger-Nachweis der Abnahme bei jedem Scan wie SP, hoechstens 3 je 60 s je Gast (Abwurf zaehlt mit inv_cons_nodrop nicht als Abnahme, Umlagern in Kiste/Kofferraum/Haendler-Verkauf mit inv_cons_nomove ebenso nicht). Ohne Nachweis (Ledger aus, Dialog-Weg) bleibt 1/60 s. 0 = immer 1/60 s
+#   world_lapscan_count=1 Host: Laptop-Scan-Buchung ueber den Abnahme-Zaehler aus ls_inv (LastConsume, 3. Rueckgabe, inv_cons_count): Scan gilt, solange Zaehler > gebuchte Scans (je Buchung +1, Startwert beim ersten ready je Verbindung); zwei Laptop-Abnahmen vor der ersten Buchung (z. B. Quests noch nicht geladen) verfallen nicht mehr. Ohne Zaehler (alter ls_inv, inv_cons_count=0) bzw. 0 = alter Weg (je letzter Abnahme-Zeit einmal, zweiter frueher Scan verfaellt). Mit Zaehler gibt es Laptop-Rueckgabe-Guthaben (Proven) nur, solange Abnahmen OHNE offene Kiste/Haendler > Proven-Buchungen (in eine Kiste verschobene/verkaufte Laptops geben keins); dieses Guthaben allein entscheidet ueber die Rueckgabe
+#   world_lap_tight=1 Host: Laptop-Rueckgabe-Guthaben (Proven) nur, wenn die Abnahme OHNE offene Kiste hoechstens 3 s vor/nach der Scan-Meldung lag (echter Scan: Verbrauch und q_lapscan im selben Klick; Zeit je Scan einmal gemerkt). 0 = ganzes 10-s-Fenster
+# Oberflaeche (ls_ui)
+#   ui_cwp_alias=1   Host: Clan-Wegpunkte mit Sitzungs-Alias "w<n>" statt der Gast-ID als Schluessel (die ID ist Admin-/Konto-Schluessel); Umschalten loescht die alten Eintraege bei den Gaesten
+#   ui_respawn_marks=1 Gast: nach jedem Respawn Karten-/Kompass-Marker neu eintragen wie im Einzelspieler (POIs, Welt-Marker, eigene Marker; ohne Mitspieler-, Wegpunkt- und Todeskisten-Marker)
+#   cheat_gate=1     Gast ohne Admin-Rechte: Cheat-Menue zu (Debug.Allow jede Sekunde 0, offenes Menue sofort zu, Tasten-Patch cheat_gate); Admins, Host und Einzelspieler unveraendert

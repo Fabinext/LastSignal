@@ -9,7 +9,7 @@ https://discord.gg/aDhks82XTv
 **Dedicated multiplayer servers for SurrounDead** – an unofficial fan modification by Fabinext.
 
 > [!IMPORTANT]
-> - **Only for SurrounDead 0.7** (the current stable Steam version). The 0.8 experimental/beta branch does not work.
+> - **Only for the SurrounDead experimental branch** (0.8, Unreal Engine 5.6, tested with build 26165965). The stable 0.7 branch is not supported since Last Signal 0.10.
 > - **All other mods must be uninstalled.** Last Signal does not work together with other UE4SS or pak mods.
 > - **Do a clean install first:** back up your saves, delete everything and reinstall the game once from Steam.
 >   See [Clean install](#clean-install-do-this-first) below.
@@ -39,7 +39,7 @@ player installs). The server software is not public yet.
 ## Requirements
 
 - Windows 10/11
-- SurrounDead **0.7** on Steam (Steam → SurrounDead → Properties → Betas → *None*)
+- SurrounDead **experimental** on Steam (Steam → SurrounDead → Properties → Betas → *experimental*)
 - No other mods installed
 
 ## Clean install (do this first)
@@ -50,7 +50,7 @@ player installs). The server software is not public yet.
 3. **Uninstall SurrounDead** in Steam (right click → Manage → Uninstall).
 4. **Delete everything that is left:** the game folder from step 2 (if it still exists) and the folder
    `%LOCALAPPDATA%\SurrounDead`.
-5. **Reinstall SurrounDead from Steam** (version 0.7, Betas → *None*), start it once until the main menu and
+5. **Reinstall SurrounDead from Steam** (Betas → *experimental*), start it once until the main menu and
    close it.
 6. **Copy your saves back** into `%LOCALAPPDATA%\SurrounDead\Saved\SaveGames`.
 7. Now install Last Signal (below).

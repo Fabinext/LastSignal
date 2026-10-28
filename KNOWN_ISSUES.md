@@ -1,39 +1,12 @@
-# Known issues
+# Known issues (Last Signal 0.10.0)
 
-Last Signal is in an early test phase. These problems are known; please only report new ones (with
-`UE4SS.log`).
+- Only the SurrounDead **experimental** branch (0.8, UE 5.6, build 26165965) is supported. After a game update the mod may need an update too.
+- Many fixes in 0.10.0 are checked by code review only and still need broader play-testing. Confirmed in game: server stutter, aiming/shooting, weapon hold pose, driving after exiting, zombies while driving, empty bottles, map markers, disassembly workbench.
+- Items dropped by players stay on the ground unless the server enables cleanup (`srv_drophook_first=1`, see SERVER.md). Dropping an equipped weapon or backpack is never cleaned up.
+- Some protections only log instead of blocking for now: guest weapon durability (`combat_dur_gate=0`), hit checks (`combat_hitcheck_deny=0`).
+- Towing/pushing cars, the trunk lock and the debug-menu time dilation were changed last and are the least tested.
+- Guests with an older client: `/unstuck` and admin teleport only move the server-side character.
+- `bans.txt` and `admin_log.txt` are backed up but not restored automatically.
+- Not included yet: name tags, base decay, whitelist, PvP statistics, raid log, permadeath.
 
-## Stability
-- **Rare crashes or freezes** (often while shooting a lot or right after joining). Most causes are fixed, a few
-  may remain. If the game hangs ("not responding"), please report the time and send `UE4SS.log`.
-
-## Vehicles
-- SurrounDead has no passenger seat, Last Signal adds one. On some vehicles the passenger sits slightly off.
-- Other players' vehicles can jitter a little.
-
-## Zombies and NPCs
-- Zombies far away from all players can stand still for a moment or jump to a new position.
-- Zombie health bars update with a short delay.
-- Aiming of other players can look slightly off.
-
-## Weapons and sound
-- Suppressors: other players may sometimes hear the unsuppressed shot.
-- A weapon dragged from a container directly into a weapon slot can lose the scope view. Unequip and equip it
-  again.
-
-## Inventory and items
-- Pressing **F** on a backpack lying on the ground can say *"Not enough space"*. Pick it up via the inventory
-  instead (drag it into the backpack slot).
-- When an admin gives items, the inventory empties for a moment and fills again.
-- After drinking, an empty water bottle can blink and be locked in the inventory.
-
-## Death and loot boxes
-- The *Last Death* marker can disappear early after respawning.
-
-## Server list
-- The ping shows `-` when the server's host blocks ping (ICMP).
-- Joining is only possible after loading your own save (not from the main menu).
-
-## Not supported
-- The SurrounDead experimental/beta branch.
-- Other UE4SS or pak mods at the same time (the installer moves them to a backup folder).
+Please report bugs with the `UE4SS.log` from `SurrounDead\Binaries\Win64\ue4ss\`.

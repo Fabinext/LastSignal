@@ -4,10 +4,10 @@ Only needed if you want to understand how the release is made. Using the release
 
 ## Native helper (`core/LastSignalCore.cpp`)
 
-Built with [llvm-mingw](https://github.com/mstorsjo/llvm-mingw):
+Built with MSVC (Visual Studio Build Tools, x64 Native Tools prompt):
 
 ```
-x86_64-w64-mingw32-clang++ -std=c++17 -O2 -D_WIN32_WINNT=0x0A00 -shared -static -s -o LastSignalCore.dll LastSignalCore.cpp -lpsapi -lwinhttp -liphlpapi -lws2_32
+cl /nologo /std:c++17 /O2 /EHa /MT /LD /W3 /D_WIN32_WINNT=0x0A00 /D_CRT_SECURE_NO_WARNINGS /DWIN32_LEAN_AND_MEAN LastSignalCore.cpp /link psapi.lib winhttp.lib iphlpapi.lib ws2_32.lib /OUT:LastSignalCore.dll
 ```
 
 ## Installer (`installer/`)
@@ -25,9 +25,14 @@ payload.zip
       └─ LastSignal/
          ├─ enabled.txt, coop.txt
          ├─ LastSignalCore.dll
-         └─ Scripts/main.lua
+         └─ Scripts/main.lua, server.lua, ls_*.lua (modules)
 ```
 
 Put `payload.zip` next to `Installer.cs` and run `build.cmd`.
+
+## Dedicated server (`server/`)
+
+`LastSignal-Server.tar.gz` contains the same `ue4ss/` folder plus `start.sh`, `server.cfg.example` and `SERVER.md`.
+Hosting: Pterodactyl egg (`server/egg-surroundead-lastsignal.json`) or Docker Compose (`server/docker/`), see `server/SERVER.md`.
 
 UE4SS: [RE-UE4SS](https://github.com/UE4SS-RE/RE-UE4SS) v3.0.1 Beta.
