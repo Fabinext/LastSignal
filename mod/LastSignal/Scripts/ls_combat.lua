@@ -2849,9 +2849,14 @@ function C.PoseFix()
     if Net.Side ~= "client" or not U.On("combat_pose_fix") then return end
     local Now = os.clock()
     if Now < (C.PoseAt or 0) then return end
-    C.PoseAt = Now + 1
+    C.PoseAt = Now + 0.1
     local Pawn = A.Safe(A.OwnPawn, nil)
     if not A.IsAlive(Pawn) then return end
+    -- Ursache (28.10., Decode @235a9/@10a8f): die Zieh-Animation schickt SERVER_ChangeActiveSlot(ToSlot) kurz vor ihrem
+    -- Ende; am Ende vergleicht das Spiel ToSlot mit dem replizierten ActiveWeapon. Bei 30 Server-FPS kommt der Wert
+    -- zu spaet -> Else-Zweig: Pose 0, HoldingFirearm? aus. Waehrend des Wechsels nichts tun, danach den Erfolgs-Zweig
+    -- sofort nachholen (lokal + Server), statt 1-2 s zu warten
+    if A.Safe(function() return Pawn["CurrentlyChangingWeapon?"] end, false) == true then C.PoseTry = nil return end
     -- Live 27.10.: Wegstecken setzt die Pose beim Gast ebenfalls nicht zurueck -> leere Hand (Slot gelesen und leer) = 0
     local W, Slot, Readable = U.ActiveWeapon(Pawn)
     local Empty = not A.IsAlive(W) and Readable == true and (Slot == nil or Slot == "" or Slot == "None")
@@ -2871,14 +2876,21 @@ function C.PoseFix()
     local Want = Empty and 0 or (A.IsAlive(Eq) and tonumber(A.Safe(function() return Eq.AnimBlendspace end, nil)) or nil)
     if not Want or Want == Cur then C.PoseTry = nil return end
     local T = C.PoseTry
-    if not T or T.Want ~= Want then T = { Want = Want, N = 0 } C.PoseTry = T end
-    T.N = T.N + 1
-    if T.N == 2 or T.N == 12 then
-        local ok = pcall(function() Pawn:Svr_UpdateCombatState(Want) end)
-        Log("Haltepose: Anim %d, Waffe %d -> Svr_UpdateCombatState(%d) %s", Cur, Want, Want, ok and "gesendet" or "Fehler")
-    elseif T.N == 4 or T.N == 14 then
-        local ok = pcall(function() Pawn:MC_UpdateCombatState(Want) end)
-        Log("Haltepose: keine Host-Antwort (Anim %d) -> lokal MC_UpdateCombatState(%d) %s", Cur, Want, ok and "ok" or "Fehler")
+    if not T or T.Want ~= Want then C.PoseTry = { Want = Want, Since = Now } return end
+    if Now - T.Since < 0.15 or (T.Sent and Now - T.Sent < 3) or (T.Tries or 0) >= 3 then return end
+    T.Sent, T.Tries = Now, (T.Tries or 0) + 1
+    -- Erfolgs-Zweig des Spiels (@10afb/@10b06) fuer Schusswaffen nachholen: HoldingFirearm? an (Zielen/Schiessen)
+    if Want > 0 and A.IsAlive(W) and A.Safe(function() return U.IsA(W, "BP_FirearmPickup_C") end, false) then
+        pcall(function() Pawn["HoldingFirearm?"] = true end)
+        pcall(function() Pawn["HoldingMelee?"] = false end)
+        pcall(function() Pawn:UpdateAmmoCount() end)
+    end
+    -- sofort lokal (eigene Sicht ohne Rundreise), dazu an den Host (verteilt an alle; gleicher Wert, kein Flackern)
+    local okL = pcall(function() Pawn:MC_UpdateCombatState(Want) end)
+    local okS = pcall(function() Pawn:Svr_UpdateCombatState(Want) end)
+    C.PoseLogN = (C.PoseLogN or 0) + 1
+    if C.PoseLogN <= 10 then
+        Log("Haltepose: Anim %d -> %d nachgeholt (lokal %s, Server %s)", Cur, Want, okL and "ok" or "Fehler", okS and "ok" or "Fehler")
     end
 end
 
@@ -5745,7 +5757,7 @@ function M.Init(Api)
         Net.Cap("cb_mrel", U.On("combat_mrelay") and (Net.Side ~= "client" or C.MRelReady == true))
         M.Caps9()
     end)
-    Core.Every("cb_muzzle", 0.25, function()
+    Core.Every("cb_muzzle", 0.1, function()
         local okM, errM = pcall(C.MuzzleTick)
         if not okM then Core.Fail("combat_muzzle_fix", errM) end
         local okR, errR = pcall(C.MuzRestore)
