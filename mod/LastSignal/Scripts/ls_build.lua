@@ -4464,24 +4464,7 @@ function OW.DisHost(G, Key, Msg, CompName)
         pcall(function() Comp:GetContainerItems(true, Out) end)
         local L = OW.ArrList(OW.Out(Out, "AllItems") or {})
         if #L > 0 or not On("build_dis_raw") then return L end
-        -- build_dis_raw (Live 28.10.): GetContainerItems ist eine BP-Funktion, ihre Ausgabe kommt in Lua nicht an -> die
-        -- Werkbank galt immer als leer (Server-Werkbank hatte DA_9mmAmmo x381). Container direkt lesen (MainJigContainers
-        -- -> ContainerItems) und nur Werte kopieren: DisItem legt Teile in denselben Container (Array kann umziehen) und
-        -- liest die UID danach - ein Verweis ins Array waere dann ungueltig
-        local IF = OW.IF
-        pcall(function() Comp.MainJigContainers:ForEach(function(_, CE)
-            CE:get()[IF.ITEMS]:ForEach(function(_, IE)
-                pcall(function()
-                    local E = IE:get()
-                    local Info, U = E[IF.INFO], E[IF.UID]
-                    local DA, Cnt = Info[IF.ID], Info[IF.COUNT]
-                    if A.IsAlive(DA) and #L < 64 then
-                        L[#L + 1] = { [IF.INFO] = { [IF.ID] = DA, [IF.COUNT] = Cnt }, [IF.UID] = { A = U.A, B = U.B, C = U.C, D = U.D } }
-                    end
-                end)
-            end)
-        end) end)
-        return L
+        return OW.RawItems(Comp, 64)
     end
     local Items = ItemsOf(C)
     if #Items == 0 then
@@ -4992,6 +4975,28 @@ end
 -- ---- raid_lootplace (BUILD-16, Host): JigMP_OnRequestDropItem (@000a/@0162) wirft den Kisteninhalt am Angreifer ab
 -- (Owner-Kette) -> neue Bodenobjekte (<= 1,5 s alt, nicht aus der Karte, nicht angehaengt, <= 400 uu um den
 -- Angreifer) an die Kiste legen (+/- 60 uu), hoechstens so viele wie die Kiste Eintraege hatte
+-- build_dis_raw (Live 28.10.): Array-Ausgaben (GetContainerItems -> AllItems) kommen in UE4SS 3.0.1 nicht in der
+-- Lua-Tabelle an (gemessen: Tabelle leer; Bool-/Struct-Ausgaben gehen) -> Werkbank galt als leer, Vitrine/Kisten-
+-- Zaehler blind. Container direkt lesen (MainJigContainers -> ContainerItems) und nur Werte kopieren: Aufrufer legen
+-- danach Items in denselben Container (Array kann umziehen) - ein Verweis ins Array waere dann ungueltig.
+-- Rueckgabe: Liste { [IF.INFO] = { [IF.ID] = DA, [IF.COUNT] = n }, [IF.UID] = {A,B,C,D} }, hoechstens Max Eintraege
+function OW.RawItems(Comp, Max)
+    local IF, L = OW.IF, {}
+    pcall(function() Comp.MainJigContainers:ForEach(function(_, CE)
+        CE:get()[IF.ITEMS]:ForEach(function(_, IE)
+            pcall(function()
+                local E = IE:get()
+                local Info, U = E[IF.INFO], E[IF.UID]
+                local DA, Cnt = Info[IF.ID], Info[IF.COUNT]
+                if A.IsAlive(DA) and #L < (Max or 64) then
+                    L[#L + 1] = { [IF.INFO] = { [IF.ID] = DA, [IF.COUNT] = Cnt }, [IF.UID] = { A = U.A, B = U.B, C = U.C, D = U.D } }
+                end
+            end)
+        end)
+    end) end)
+    return L
+end
+
 function OW.BoxCount(Obj)
     local CJ = A.Safe(function() return Obj.BP_JigMultiplayer end)
     if not A.IsAlive(CJ) then return nil end
@@ -4999,7 +5004,9 @@ function OW.BoxCount(Obj)
     if not pcall(function() CJ:GetContainerItems(false, T) end) then return nil end
     local V = OW.Out(T, "AllItems")
     if type(V) == "table" then return #V end
-    return V ~= nil and tonumber(A.Safe(function() return V:GetArrayNum() end)) or nil
+    local N = V ~= nil and tonumber(A.Safe(function() return V:GetArrayNum() end)) or nil
+    if N == nil and On("build_dis_raw") then N = #OW.RawItems(CJ, 512) end
+    return N
 end
 
 function OW.LootQueue(E, APawn, N)
@@ -5067,6 +5074,7 @@ function OW.DisplayState(Obj)
     local Out = {}
     CJ:GetContainerItems(true, Out)
     local It = OW.ArrList(OW.Out(Out, "AllItems"))[1]
+    if It == nil and On("build_dis_raw") then It = OW.RawItems(CJ, 1)[1] end   -- Array-Ausgabe fehlt (s. OW.RawItems)
     if It == nil then return "v;" end
     local Info = A.Safe(function() return It[OW.IF.INFO] end)
     if Info == nil then

@@ -445,7 +445,14 @@ local function TrunkCount(V)
     if L == nil then for _, X in pairs(T) do L = X break end end
     if type(L) == "table" then return #L end
     if L ~= nil then return tonumber(A.Safe(function() return L:GetArrayNum() end)) end
-    return nil
+    -- build_dis_raw (28.10.): Array-Ausgaben kommen in UE4SS 3.0.1 nicht in der Tabelle an (gemessen) -> Eintraege
+    -- direkt aus MainJigContainers zaehlen (wie ls_build OW.RawItems)
+    if not Core.Flag("build_dis_raw", true) then return nil end
+    local N = 0
+    local Ok = pcall(function() Jig.MainJigContainers:ForEach(function(_, CE)
+        N = N + (tonumber(CE:get().ContainerItems_16_16E3D87B4C0AC5D6C9C861B96B5ABA8B:GetArrayNum()) or 0)
+    end) end)
+    return Ok and N or nil
 end
 
 -- Keyed-State car_s fuer alle Autos (1 s); Kofferraum einmal je Auto replizieren

@@ -89,7 +89,7 @@ frame_walk=1
 #   car_diag=0 Diagnose: waehrend einer Fahrt alle 5 s Zombies um das Auto zaehlen (Server und Gast, [Car] Diag Fahrt). 0 = aus
 #   ui_mark_gps=1 Gast: Karten-Marker per Doppelklick auch ohne Spiel-GPS-Erkennung (IsGPSEquipped? ist beim Gast immer false); nur wenn der Server GPS meldet. Anzeige, Speichern und Teilen mit dem Clan wie ui_marks. 0 = aus
 #   inv_gain_host=1 Server: Rueckgabe-Item beim Verbrauch (leere Flasche) legt der Host selbst an, wenn binnen 2,5 s kein Platzhalter des Gasts kam (ab der zweiten Flasche stapelt das Spiel beim Gast ohne Platzhalter: Flasche verschwand). Nicht bei Abwurf, Umlagern oder Stapel-Teilen. 0 = aus
-#   build_dis_raw=1 Server: Zerlege-Werkbank liest ihre Items direkt aus den Containern (GetContainerItems liefert in Lua nichts: Werkbank galt immer als leer, Zerlegen ging nie). 0 = aus
+#   build_dis_raw=1 Server: Container direkt lesen, wo das Spiel Item-Listen als Ausgabe liefert (kommen in Lua nicht an): Zerlege-Werkbank (ging nie), Vitrine fuer Gaeste, Kisten- und Kofferraum-Zaehler, Raid-Beute an der Kiste. 0 = aus
 #   animal_v3=1      Tiere v3: Tier-HP/Tod/gelootet/Liegepunkt ueber ai2, Kadaver-Inventar repliziert
 #   ai_guard=1       Mitspieler: KI-Kopien per Eigenschaft schuetzen (CanDamage?, DamageToDo, bCanBeDamaged), statt Lua-Hooks
 #   ai_aio_guest=1   Mitspieler: AI-Optimizer friert/entfernt replizierte KI-Kopien nicht
