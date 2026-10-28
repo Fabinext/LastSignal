@@ -10,8 +10,8 @@
     "description": "Dedicated SurrounDead server with the Last Signal mod. Runs the Windows build under Wine without graphics or sound (-nullrhi). Players join from the in-game server list (Last Signal client mod required).",
     "features": null,
     "docker_images": {
-        "Wine (latest)": "ghcr.io/parkervcp/yolks:wine_latest",
-        "Wine (staging)": "ghcr.io/parkervcp/yolks:wine_staging"
+        "Wine latest": "ghcr.io/parkervcp/yolks:wine_latest",
+        "Wine staging": "ghcr.io/parkervcp/yolks:wine_staging"
     },
     "file_denylist": [],
     "startup": "for P in LastSignal-Server.tar.gz NetTest-Server.tar.gz; do if [ -f $P ]; then tar -xzf $P && rm -f $P; fi; done; if [ -f start.sh ]; then exec bash ./start.sh; else echo \"Last Signal not installed: upload LastSignal-Server.tar.gz via SFTP, then start again.\"; fi",
